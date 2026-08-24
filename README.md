@@ -384,6 +384,12 @@ SHAP explainability visualization
 
 
 
+### 📸 Dashboard Preview
+
+![Customer Churn Prediction Dashboard](images/streamlit_high_risk.png)
+![Customer Churn Prediction Dashboard](images/streamlit_high_risk_recommendation.png)
+![Customer Churn Prediction Dashboard](images/streamlit_high_risk_shap.png)
+
 
 
 🐳 Docker
