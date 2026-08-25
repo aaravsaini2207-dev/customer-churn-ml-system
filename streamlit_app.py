@@ -6,12 +6,7 @@ import os
 st.set_page_config(page_title = 'Customer Churn AI' , layout = 'wide')
 
 
-
-API_URL = os.getenv(
-    "API_URL",
-    "http://api:8000/predict"
-)
-#API_URL = "http://api:8000/predict"
+API_URL = "https://customer-churn-api-xhre.onrender.com/predict"
 
 
 st.title("Customer Churn Prediction")
