@@ -8,6 +8,8 @@ The project covers the complete ML lifecycle:
 
 ---
 
+
+
 ## 🌐 Live Application
 
 ### 🎨 Live Customer Churn Dashboard
@@ -27,6 +29,8 @@ https://customer-churn-api-new.onrender.com/docs
 
 ---
 
+
+
 # 🎯 Problem Statement
 
 Customer churn is a major business problem in e-commerce.
@@ -42,6 +46,8 @@ Instead of producing only a binary prediction, the system provides:
 - Customer-specific SHAP explanation
 
 ---
+
+
 
 # 🏗️ Production Architecture
 
@@ -75,6 +81,8 @@ Instead of producing only a binary prediction, the system provides:
                     ▼
                 Web UI
 
+
+
 🧠 Features
 The final model uses six customer-level behavioral features:
 
@@ -87,6 +95,8 @@ UniqueProducts	Number of distinct products purchased
 CustomerLifetimeDays	Duration between first and last purchase
 
 These features capture customer purchasing behavior and provide meaningful signals for identifying potential churn.
+
+
 
 🤖 Machine Learning
 The final model uses XGBoost for binary churn classification.
@@ -117,6 +127,8 @@ ROC-AUC	0.7251
 
 Multiple evaluation metrics are reported because churn prediction involves a trade-off between precision and recall.
 
+
+
 🎚️ Threshold Analysis
 The classification threshold was evaluated instead of automatically assuming 0.50.
 
@@ -130,6 +142,8 @@ Threshold	Precision	Recall	F1
 0.65	0.739	0.283	0.409
 
 The deployed API uses a configurable decision threshold loaded from the trained model artifacts.
+
+
 
 🔍 Explainable AI with SHAP
 The application uses SHAP (SHapley Additive exPlanations) to explain individual predictions.
@@ -145,6 +159,8 @@ UniqueProducts  → contributes toward higher/lower churn
 The dashboard visualizes the most influential features for each prediction.
 
 Important: SHAP values explain model behavior. They should not be interpreted as causal effects.
+
+
 
 🚀 FastAPI
 The trained model is exposed through a REST API built using FastAPI.
@@ -176,6 +192,8 @@ SHAP feature contributions
 Health Endpoint
 GET /health
 
+
+
 🎨 Web Dashboard
 The frontend provides an interactive interface for customer churn prediction.
 
@@ -189,6 +207,8 @@ Business recommendation
 SHAP explainability visualization
 Live Application
 👉 https://retail-churn-frontend.onrender.com/
+
+
 
 🐳 Docker
 The FastAPI backend is containerized using Docker.
@@ -221,6 +241,8 @@ Stop:
 
 docker compose down
 
+
+
 ☁️ Cloud Deployment
 The production system is deployed using Render.
 
@@ -239,6 +261,8 @@ XGBoost + SHAP
 The frontend communicates with the backend through:
 
 POST /predict
+
+
 
 📁 Project Structure
 customer-churn-ml-system/
@@ -294,6 +318,8 @@ Docker Compose	Local orchestration
 Render	Cloud deployment
 Git / GitHub	Version control
 
+
+
 🔄 End-to-End Workflow
 Raw Transactions
        ↓
@@ -323,6 +349,8 @@ Web Frontend
        ↓
 End User
 
+
+
 🔮 Future Improvements
 Potential improvements include:
 
@@ -336,12 +364,16 @@ Automated retention campaign integration
 Improved probability calibration
 Experiment tracking
 Production monitoring and logging
+
+
 👨‍💻 Author
 Aarav Saini
 
 B.Tech — Computer Science Engineering
 
 GitHub: aaravsaini2207-dev
+
+
 
 ⭐ Project Goal
 The objective of this project was not only to train a churn classification model, but to build a complete machine learning application around it.
@@ -369,5 +401,6 @@ Cloud Deployment
 Interactive Web Application
 
 This project demonstrates how a machine learning model can be taken from experimentation to a deployed, explainable, end-to-end ML application.
+
 
 ⭐ If you found this project useful, consider giving the repository a star!
