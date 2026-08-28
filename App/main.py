@@ -27,8 +27,8 @@ app.add_middleware(
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-MODEL_PATH = BASE_DIR / "model" / "churn_xgboost_model.pkl"
-THRESHOLD_PATH = BASE_DIR / "model" / "churn_threshold.pkl"
+MODEL_PATH = BASE_DIR / "Model" / "churn_xgboost_model.pkl"
+THRESHOLD_PATH = BASE_DIR / "Model" / "churn_threshold.pkl"
 
 model = joblib.load(MODEL_PATH)
 threshold = joblib.load(THRESHOLD_PATH)
