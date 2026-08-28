@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Churn Intelligence</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <p class="eyebrow">Retail analytics</p>
+      <h1>Customer Churn Intelligence</h1>
+      <p class="subtitle">
+        Predict customer churn risk from transactional behavior using a machine-learning model,
+        then review the drivers behind each score.
+      </p>
+    </header>
+
+    <main class="layout">
+      <section class="card" aria-labelledby="profile-heading">
+        <div class="card-head">
+          <h2 id="profile-heading">Customer profile</h2>
+          <p>Enter six behavioral features used by the churn model.</p>
+        </div>
+
+        <p id="error-banner" class="error-banner" hidden role="alert"></p>
+
+        <form id="profile-form" class="profile-form" action="#" method="get">
+          <div class="field-grid">
+            <label class="field">
+              <span class="field-label">Recency</span>
+              <span class="field-hint">Days since last purchase</span>
+              <input type="number" name="recency" min="0" step="1" value="30" inputmode="numeric" required>
+            </label>
+
+            <label class="field">
+              <span class="field-label">Frequency</span>
+              <span class="field-hint">Total distinct orders</span>
+              <input type="number" name="frequency" min="1" step="1" value="10" inputmode="numeric" required>
+            </label>
+
+            <label class="field">
+              <span class="field-label">Monetary</span>
+              <span class="field-hint">Total customer revenue</span>
+              <input type="number" name="monetary" min="0" step="0.01" value="1000" inputmode="decimal" required>
+            </label>
+
+            <label class="field">
+              <span class="field-label">Average Order Value</span>
+              <span class="field-hint">Revenue per order</span>
+              <input type="number" name="average_order_value" min="0" step="0.01" value="100" inputmode="decimal" required>
+            </label>
+
+            <label class="field">
+              <span class="field-label">Unique Products</span>
+              <span class="field-hint">Distinct products purchased</span>
+              <input type="number" name="unique_products" min="1" step="1" value="5" inputmode="numeric" required>
+            </label>
+
+            <label class="field">
+              <span class="field-label">Customer Lifetime Days</span>
+              <span class="field-hint">Days between first and last purchase</span>
+              <input type="number" name="customer_lifetime_days" min="0" step="1" value="100" inputmode="numeric" required>
+            </label>
+          </div>
+
+          <button id="analyze-btn" class="analyze-btn" type="button">Analyze Customer</button>
+        </form>
+      </section>
+
+      <section
+        class="card"
+        aria-labelledby="results-heading"
+        aria-live="polite"
+      >
+        <div class="card-head">
+          <h2 id="results-heading">Prediction results</h2>
+          <p id="results-caption">Placeholder scores for layout. Live predictions will appear here later.</p>
+        </div>
+
+        <div class="metric-grid">
+          <article class="metric">
+            <p class="metric-label">Churn Probability</p>
+            <p id="probability-value" class="metric-value">—</p>
+            <div id="probability-meter" class="meter" role="img" aria-label="Churn probability 61 percent">
+              <span id="meter-fill" class="meter-fill"></span>
+            </div>
+          </article>
+
+          <article class="metric">
+            <p class="metric-label">Risk Level</p>
+            <p class="metric-value">
+              <span id="risk-badge" class="badge">—</span>
+            </p>
+            <p id="risk-note" class="metric-note">Monitor this customer</p>
+          </article>
+
+          <article class="metric">
+            <p class="metric-label">Prediction</p>
+            <p id="prediction-value" class="metric-value">—</p>
+            <p id="prediction-note" class="metric-note">Above decision threshold 0.40</p>
+          </article>
+        </div>
+
+        <div class="recommendation">
+          <h3>Recommendation</h3>
+          <p id="recommendation-text">
+            Analyze a customer to receive a personalized retention recommendation.
+          </p>
+        </div>
+      </section>
+
+      <section class="card card-wide" aria-labelledby="shap-heading">
+        <div class="card-head">
+          <h2 id="shap-heading">Why did the model make this prediction?</h2>
+          <p id="shap-caption">
+            Placeholder SHAP-style feature contributions. Bars to the right increase predicted churn risk;
+            bars to the left reduce it.
+          </p>
+        </div>
+
+        <div class="shap-legend">
+          <span class="legend-item">
+            <span class="legend-swatch legend-swatch-neg"></span>
+            Reduces churn risk
+          </span>
+          <span class="legend-item">
+            <span class="legend-swatch legend-swatch-pos"></span>
+            Increases churn risk
+          </span>
+        </div>
+
+        <div id="shap-chart" class="shap-chart">
+          <p class="empty-state">
+            Analyze a customer to see the features influencing the prediction.
+          </p>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
