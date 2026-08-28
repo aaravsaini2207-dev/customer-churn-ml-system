@@ -1,5 +1,5 @@
 // Production API URL
-const API_URL = "https://customer-churn-api-xhre.onrender.com/predict";
+const API_URL = "https://customer-churn-api-new.onrender.com/predict";
 
 const form = document.getElementById("profile-form");
 const analyzeBtn = document.getElementById("analyze-btn");
