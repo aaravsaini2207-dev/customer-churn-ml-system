@@ -29,13 +29,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 MODEL_PATH = BASE_DIR / "Model" / "churn_xgboost_model.pkl"
 THRESHOLD_PATH = BASE_DIR / "Model" / "churn_threshold.pkl"
-model = joblib.load(MODEL_PATH)
-threshold = joblib.load(THRESHOLD_PATH)
+
+try:
+    model = joblib.load(MODEL_PATH)
+    threshold = joblib.load(THRESHOLD_PATH)
+except FileNotFoundError as e:
+    raise RuntimeError(f"Model files not found at {BASE_DIR / 'Model'}: {e}")
 
 SPEND_MODEL_PATH = BASE_DIR / "Model" / "future_spend_model.pkl"
 SPEND_FEATURE_PATH = BASE_DIR / "Model" / "future_spend_features.pkl"
-spend_model = joblib.load(SPEND_MODEL_PATH)
-spend_features = joblib.load(SPEND_FEATURE_PATH)
+
+try:
+    spend_model = joblib.load(SPEND_MODEL_PATH)
+    spend_features = joblib.load(SPEND_FEATURE_PATH)
+except FileNotFoundError as e:
+    raise RuntimeError(f"Spend model files not found at {BASE_DIR / 'Model'}: {e}")
 
 explainer = shap.TreeExplainer(model)
 
