@@ -76,7 +76,7 @@ function formatPercent(probability) {
 }
 
 function formatSpend(amount, currency) {
-  const formatted = Number(amount).toLocaleString("en-US", {
+  const formatted = Number(amount).toLocaleString("en-GB", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   });
@@ -85,7 +85,7 @@ function formatSpend(amount, currency) {
     return formatted;
   }
 
-  return currency + " " + formatted;
+  return currency + formatted;
 }
 
 function riskMeta(risk) {
@@ -142,7 +142,10 @@ function renderSpend(result) {
     throw new Error("The spend prediction API did not return a valid amount.");
   }
 
-  spendValue.textContent = formatSpend(amount, result.currency);
+  spendValue.textContent = "£" + Number(amount).toLocaleString("en-GB", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
   spendNote.textContent = "Estimated customer spend over the next 90 days.";
 }
 
