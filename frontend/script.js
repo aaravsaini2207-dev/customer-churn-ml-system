@@ -1,6 +1,6 @@
 // Production API URL
 const API_URL = "https://customer-churn-api-new.onrender.com/predict";
-const SPEND_API_URL = "https://customer-churn-api-new.onrender.com/predict-spend";
+const SPEND_API_URL = "https://customer-churn-api-new.onrender.com/predict_spend";
 
 const form = document.getElementById("profile-form");
 const analyzeBtn = document.getElementById("analyze-btn");
