@@ -29,9 +29,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 MODEL_PATH = BASE_DIR / "Model" / "churn_xgboost_model.pkl"
 THRESHOLD_PATH = BASE_DIR / "Model" / "churn_threshold.pkl"
-
 model = joblib.load(MODEL_PATH)
 threshold = joblib.load(THRESHOLD_PATH)
+
+SPEND_MODEL_PATH = BASE_DIR / "Model" / "future_spend_model.pkl"
+SPEND_FEATURE_PATH = BASE_DIR / "MODEL" / "future_spend_features.pkl"
+spend_model = joblib.load(SPEND_MODEL_PATH)
+spend_features = joblib.load(SPEND_FEATURE_PATH)
 
 explainer = shap.TreeExplainer(model)
 
@@ -51,7 +55,7 @@ def home():
 
 @app.get("/health")
 def health():
-    return {"status": "healthy", "model": "XGBoost", "features": 6}
+    return {"status": "healthy", "model": {"churn":"XGBoost" , "future_spend":"Random Forest"}, "features": 6}
 
 # Prediction endpoint
 @app.post("/predict")
@@ -108,4 +112,27 @@ def predict_churn(customer: CustomerData):
         "model": "XGBoost",
         "features_used": 6,
         "shap_explanation": shap_explanation
+    }
+
+@app.post("/predict_spend")
+def predict_future_spend(customer : CustomerData):
+    features = [[
+        customer.recency,
+        customer.frequency,
+        customer.monetary,
+        customer.average_order_value,
+        customer.unique_products,
+        customer.customer_lifetime_days]]
+
+    X_customer = pd.DataFrame(features , columns = spend_features)
+
+    predicted_spend = float(spend_model.predict(X_customer)[0])     #spend_model.predict(X_customer) does prediction ,[0] picks first value
+    predicted_spend = max(predicted_spend , 0)                  #insures data is always greater than 0 if negative then 0 replaces it
+
+    return{
+        "predicted_90_day_spend": round(predicted_spend , 2),
+        "currency" : "GBP" , 
+        "model": "RandomForestRegressor",
+        "prediction_horizon" : "90_days",
+        "features_used" : len(spend_features)
     }
