@@ -16,7 +16,7 @@ ENV PATH=/root/.local/bin:$PATH
 
 COPY App ./app
 
-COPY Model ./model
+COPY Model ./Model
 
 EXPOSE 8000
 
