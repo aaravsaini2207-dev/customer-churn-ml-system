@@ -1,5 +1,6 @@
 // Production API URL
 const API_URL = "https://customer-churn-api-new.onrender.com/predict";
+const SPEND_API_URL = "https://customer-churn-api-new.onrender.com/predict-spend";
 
 const form = document.getElementById("profile-form");
 const analyzeBtn = document.getElementById("analyze-btn");
@@ -13,6 +14,8 @@ const riskNote = document.getElementById("risk-note");
 const predictionValue = document.getElementById("prediction-value");
 const predictionNote = document.getElementById("prediction-note");
 const recommendationText = document.getElementById("recommendation-text");
+const spendValue = document.getElementById("spend-value");
+const spendNote = document.getElementById("spend-note");
 const shapChart = document.getElementById("shap-chart");
 const resultsCaption = document.getElementById("results-caption");
 const shapCaption = document.getElementById("shap-caption");
@@ -72,6 +75,19 @@ function formatPercent(probability) {
   return (probability * 100).toFixed(2) + "%";
 }
 
+function formatSpend(amount, currency) {
+  const formatted = Number(amount).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+
+  if (!currency) {
+    return formatted;
+  }
+
+  return currency + " " + formatted;
+}
+
 function riskMeta(risk) {
   const value = String(risk || "").toLowerCase();
   if (value === "high") {
@@ -117,6 +133,17 @@ function renderResults(result) {
   resultsCaption.textContent = "Live prediction from the deployed XGBoost API.";
   shapCaption.textContent =
     "SHAP values from this prediction. Bars to the right increase predicted churn risk; bars to the left reduce it.";
+}
+
+function renderSpend(result) {
+  const amount = Number(result.predicted_90_day_spend);
+
+  if (!Number.isFinite(amount)) {
+    throw new Error("The spend prediction API did not return a valid amount.");
+  }
+
+  spendValue.textContent = formatSpend(amount, result.currency);
+  spendNote.textContent = "Estimated customer spend over the next 90 days.";
 }
 
 function createEl(tag, className, text) {
@@ -192,6 +219,32 @@ function renderShap(explanation) {
   shapChart.setAttribute("aria-label", "SHAP feature impacts for this prediction");
 }
 
+async function postJson(url, payload, label) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    let message = `The ${label} API returned status ${response.status}.`;
+
+    try {
+      const errorData = await response.json();
+
+      if (errorData.detail) {
+        message = errorData.detail;
+      }
+    } catch (_) {
+      // Keep the default error message if the response isn't JSON.
+    }
+
+    throw new Error(message);
+  }
+
+  return response.json();
+}
+
 async function analyzeCustomer() {
   clearError();
 
@@ -211,31 +264,14 @@ async function analyzeCustomer() {
   setLoading(true);
 
   try {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
+    const [churnResult, spendResult] = await Promise.all([
+      postJson(API_URL, payload, "churn prediction"),
+      postJson(SPEND_API_URL, payload, "spend prediction")
+    ]);
 
-    if (!response.ok) {
-      let message = `The prediction API returned status ${response.status}.`;
-
-      try {
-        const errorData = await response.json();
-
-        if (errorData.detail) {
-          message = errorData.detail;
-        }
-      } catch (_) {
-        // Keep the default error message if the response isn't JSON.
-      }
-
-      throw new Error(message);
-    }
-
-    const result = await response.json();
-    renderResults(result);
-    renderShap(result.shap_explanation);
+    renderResults(churnResult);
+    renderShap(churnResult.shap_explanation);
+    renderSpend(spendResult);
   } catch (err) {
     if (err.name === "TypeError") {
       showError("Unable to reach the prediction API. Check your connection or try again in a moment.");
