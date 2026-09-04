@@ -33,7 +33,7 @@ model = joblib.load(MODEL_PATH)
 threshold = joblib.load(THRESHOLD_PATH)
 
 SPEND_MODEL_PATH = BASE_DIR / "Model" / "future_spend_model.pkl"
-SPEND_FEATURE_PATH = BASE_DIR / "MODEL" / "future_spend_features.pkl"
+SPEND_FEATURE_PATH = BASE_DIR / "Model" / "future_spend_features.pkl"
 spend_model = joblib.load(SPEND_MODEL_PATH)
 spend_features = joblib.load(SPEND_FEATURE_PATH)
 
