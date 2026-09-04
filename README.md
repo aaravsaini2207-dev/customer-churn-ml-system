@@ -266,8 +266,6 @@ Add the project screenshot here:
 ![Customer Churn Intelligence Dashboard](images/dashboard.png)
 ```
 
-If your screenshot has a different filename or location, update the path accordingly.
-
 ---
 
 ## 🛠️ Tech Stack
