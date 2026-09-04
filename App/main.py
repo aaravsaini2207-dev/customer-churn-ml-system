@@ -103,13 +103,13 @@ def predict_churn(customer: CustomerData):
     # Risk classification
     if probability >= 0.65:
         risk = 'High'
-        recommendation = "Prioritize this customer for a retention campaign and personalized re-engagement"
+        recommendation = "Prioritize immediate retention outreach with a personalized offer.The customer shows elevated churn risk and should be contacted before further purchasing inactivity occurs."
     elif probability >= 0.40:
         risk = 'Medium'
-        recommendation = "Monitor purchasing activity and consider a personalized offer."
+        recommendation = "Increase customer engagement with personalized recommendations or a targeted incentive, and monitor purchase activity closely."
     else:
         risk = 'Low'
-        recommendation = "Customer appears relatively stable. Continue normal engagement."
+        recommendation = "Maintain regular engagement and focus on personalized recommendations and cross-sell opportunities rather than aggressive retention discounts."
 
     return {
         "churn_probability": round(float(probability), 4),
