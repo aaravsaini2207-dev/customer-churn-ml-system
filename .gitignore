@@ -1,32 +1,33 @@
+# Environment variables
+.env
+.env.*
+
 # Python
 __pycache__/
 *.py[cod]
+*.pyo
 
 # Virtual environments
 venv/
 .venv/
 env/
 
-# Environment / secrets
-.env
-.env.*
-
-# Jupyter
-.ipynb_checkpoints/
-
 # IDE
 .vscode/
+.idea/
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Logs
-*.log
+# ML artifacts / large generated files
+*.pkl
 
-# Local datasets
-*.csv
-*.xlsx
-
-# Python cache
+# Testing / coverage
 .pytest_cache/
+.coverage
+htmlcov/
+
+# Alembic
+# Keep migrations tracked!
+# alembic/versions/ should NOT be ignored

@@ -1,10 +1,22 @@
-from fastapi import FastAPI
+from fastapi import FastAPI , APIRouter , Depends
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel , Field , ConfigDict
 from pathlib import Path
 import joblib
 import shap
 import pandas as pd
+
+from sqlalchemy.orm import Session
+from database import Base, engine, get_db
+from App.models import User, Prediction
+
+from datetime import datetime
+
+from App.routers.predictions import router as prediction_router
+from App.routers.users import router as user_router
+
+from App.auth import get_current_user
+
 
 # Create FastAPI application
 app = FastAPI(
@@ -12,6 +24,7 @@ app = FastAPI(
     description = "API for predicting customer churn using XGBoost",
     version = "1.0.0"
 )
+api_router = APIRouter(prefix="/api/v1")
 
 app.add_middleware(
     CORSMiddleware,
@@ -49,6 +62,136 @@ explainer = shap.TreeExplainer(model)
 
 # Input data structure
 class CustomerData(BaseModel):
+    recency: int = Field(ge=0 , le = 3650 ,  description="Number of days since the customer's last purchase.")
+    frequency: int = Field(ge=0 , le=10000 , description="Number of purchases made by the customer.")
+    monetary: float = Field(ge=0 , le= 1000000 , description="Total monetary value of customer purchases.")
+    average_order_value: float = Field(ge=0 , le=100000 , description="Average value of a customer order.")
+    unique_products: int = Field(ge=0 , le=1000 , description="Number of unique products purchased.")
+    customer_lifetime_days: int = Field(ge=0 , le=10000 , description="Number of days the customer has been active.")
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "recency": 30,
+                "frequency": 12,
+                "monetary": 1500.0,
+                "average_order_value": 125.0,
+                "unique_products": 8,
+                "customer_lifetime_days": 365
+            }
+        }
+    }
+
+class SHAPExplanation(BaseModel):
+    feature: str
+    value: float
+    impact: float
+
+class HealthResponse(BaseModel):
+    status: str
+    churn_model_loaded: bool
+    spend_model_loaded: bool
+
+class PredictionResponse(BaseModel):
+    churn_probability: float
+    prediction: int
+    prediction_label: str
+    risk: str
+    threshold: float
+    recommendation: str
+    model: str
+    features_used: int
+    shap_explanation: list[SHAPExplanation]
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "churn_probability": 0.5608,
+                "prediction": 1,
+                "prediction_label": "Churn",
+                "risk": "Medium",
+                "threshold": 0.4,
+                "recommendation": "Increase customer engagement with personalized recommendations or a targeted incentive, and monitor purchase activity closely.",
+                "model": "XGBoost",
+                "features_used": 6,
+                "shap_explanation": [
+                    {
+                        "feature": "UniqueProducts",
+                        "value": 8.0,
+                        "impact": 0.47
+                    },
+                    {
+                        "feature": "Recency",
+                        "value": 30.0,
+                        "impact": -0.29
+                    }
+                ]
+            }
+        }
+    }
+
+class SpendPredictionResponse(BaseModel):
+    predicted_90_day_spend: float
+    currency: str
+    model: str
+    prediction_horizon: str
+    features_used: int
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "predicted_90_day_spend": 372.49,
+                "currency": "GBP",
+                "model": "RandomForestRegressor",
+                "prediction_horizon": "90_days",
+                "features_used": 6
+            }
+        }
+    }
+
+class CustomerIntelligenceResponse(BaseModel):
+    churn_probability: float
+    prediction: int
+    prediction_label: str
+    risk: str
+    threshold: float
+    recommendation: str
+    predicted_90_day_spend: float
+    currency: str
+    model_churn: str
+    model_spend: str
+    features_used: int
+    shap_explanation: list[SHAPExplanation]
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "churn_probability": 0.5608,
+                "prediction": 1,
+                "prediction_label": "Churn",
+                "risk": "Medium",
+                "threshold": 0.4,
+                "recommendation": "Increase customer engagement with personalized recommendations or a targeted incentive, and monitor purchase activity closely.",
+                "predicted_90_day_spend": 372.49,
+                "currency": "GBP",
+                "model_churn": "XGBoost",
+                "model_spend": "RandomForestRegressor",
+                "features_used": 6,
+                "shap_explanation": [
+                    {
+                        "feature": "UniqueProducts",
+                        "value": 8.0,
+                        "impact": 0.47
+                    },
+                    {
+                        "feature": "Recency",
+                        "value": 30.0,
+                        "impact": -0.29
+                    }
+                ]
+            }
+        }
+    }
+
+class PredictionHistoryResponse(BaseModel):
+    id: int
     recency: int
     frequency: int
     monetary: float
@@ -56,18 +199,26 @@ class CustomerData(BaseModel):
     unique_products: int
     customer_lifetime_days: int
 
+    churn_probability: float
+    prediction: int
+    prediction_label: str
+    risk: str
+
+    predicted_90_day_spend: float
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
 # Test endpoint
-@app.get("/")
+@api_router.get("/")
 def home():
     return {'message': "Retail Churn Prediction API is running!"}
 
-@app.get("/health")
+@api_router.get("/health" , response_model = HealthResponse , description="Check API Health" , tags=["Health"])
 def health():
-    return {"status": "healthy", "model": {"churn":"XGBoost" , "future_spend":"Random Forest"}, "features": 6}
+    return {"status": "healthy", "churn_model_loaded": model is not None, "spend_model_loaded": spend_model is not None}
 
-# Prediction endpoint
-@app.post("/predict")
-def predict_churn(customer: CustomerData):
+def run_churn_prediction(customer: CustomerData):
     features = [[
         customer.recency,
         customer.frequency,
@@ -81,24 +232,24 @@ def predict_churn(customer: CustomerData):
     probability = float(model.predict_proba(features)[0][1])
 
     feature_names = ["Recency", "Frequency", "Monetary", "AverageOrderValue", "UniqueProducts", "CustomerLifetimeDays"]
-    X_customer = pd.DataFrame(features , columns = feature_names)
+    X_customer = pd.DataFrame(features, columns=feature_names)
     shap_values = explainer.shap_values(X_customer)
 
-    if isinstance(shap_values , list):
-        customer_shap =  shap_values[1][0]
+    if isinstance(shap_values, list):
+        customer_shap = shap_values[1][0]
     else:
         customer_shap = shap_values[0]
 
-    shap_explanation = [{"feature": feature_names[i],
-                        "value": float(features[0][i]),
-                        "impact": float(customer_shap[i])}
-                        for i in range(len(feature_names))]
-    shap_explanation.sort(
-    key=lambda x: abs(x["impact"]),
-    reverse=True)
+    shap_explanation = [{
+        "feature": feature_names[i],
+        "value": float(features[0][i]),
+        "impact": float(customer_shap[i])
+    } for i in range(len(feature_names))]
 
+    shap_explanation.sort(key=lambda x: abs(x["impact"]), reverse=True)
 
     prediction = int(probability >= threshold)
+    prediction_label = "Churn" if prediction == 1 else "No Churn"
 
     # Risk classification
     if probability >= 0.65:
@@ -114,6 +265,7 @@ def predict_churn(customer: CustomerData):
     return {
         "churn_probability": round(float(probability), 4),
         "prediction": prediction,
+        "prediction_label": prediction_label,
         "risk": risk,
         "threshold": float(threshold),
         "recommendation": recommendation,
@@ -122,25 +274,105 @@ def predict_churn(customer: CustomerData):
         "shap_explanation": shap_explanation
     }
 
-@app.post("/predict_spend")
-def predict_future_spend(customer : CustomerData):
+def run_spend_prediction(customer: CustomerData):
     features = [[
         customer.recency,
         customer.frequency,
         customer.monetary,
         customer.average_order_value,
         customer.unique_products,
-        customer.customer_lifetime_days]]
+        customer.customer_lifetime_days
+    ]]
 
-    X_customer = pd.DataFrame(features , columns = spend_features)
+    X_customer = pd.DataFrame(features, columns=spend_features)
 
-    predicted_spend = float(spend_model.predict(X_customer)[0])     #spend_model.predict(X_customer) does prediction ,[0] picks first value
-    predicted_spend = max(predicted_spend , 0)                  #insures data is always greater than 0 if negative then 0 replaces it
+    predicted_spend = float(spend_model.predict(X_customer)[0])
+    predicted_spend = max(predicted_spend, 0)
 
-    return{
-        "predicted_90_day_spend": round(predicted_spend , 2),
-        "currency" : "GBP" , 
+    return {
+        "predicted_90_day_spend": round(predicted_spend, 2),
+        "currency": "GBP",
         "model": "RandomForestRegressor",
-        "prediction_horizon" : "90_days",
-        "features_used" : len(spend_features)
+        "prediction_horizon": "90_days",
+        "features_used": len(spend_features),
     }
+
+@api_router.post(
+    "/customer-intelligence",
+    response_model=CustomerIntelligenceResponse,
+    summary="Get Complete Customer Intelligence",
+    tags=["ML Predictions"]
+)
+def customer_intelligence(
+    customer: CustomerData,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    churn_result = run_churn_prediction(customer)
+    spend_result = run_spend_prediction(customer)
+
+    prediction = Prediction(
+        user_id=current_user.id,
+        recency=customer.recency,
+        frequency=customer.frequency,
+        monetary=customer.monetary,
+        average_order_value=customer.average_order_value,
+        unique_products=customer.unique_products,
+        customer_lifetime_days=customer.customer_lifetime_days,
+        churn_probability=churn_result["churn_probability"],
+        prediction=churn_result["prediction"],
+        prediction_label=churn_result["prediction_label"],
+        risk=churn_result["risk"],
+        predicted_90_day_spend=spend_result["predicted_90_day_spend"]
+    )
+
+    db.add(prediction)
+    db.commit()
+    db.refresh(prediction)
+
+    return {
+        "churn_probability": churn_result["churn_probability"],
+        "prediction": churn_result["prediction"],
+        "prediction_label": churn_result["prediction_label"],
+        "risk": churn_result["risk"],
+        "threshold": churn_result["threshold"],
+        "recommendation": churn_result["recommendation"],
+        "predicted_90_day_spend": spend_result["predicted_90_day_spend"],
+        "currency": spend_result["currency"],
+        "model_churn": churn_result["model"],
+        "model_spend": spend_result["model"],
+        "features_used": churn_result["features_used"],
+        "shap_explanation": churn_result["shap_explanation"]
+    }
+
+
+
+
+
+@api_router.post(
+    "/predict",
+    response_model=PredictionResponse,
+    summary="Predict Customer Churn",
+    tags=["ML Predictions"]
+)
+def predict_churn(customer: CustomerData, current_user=Depends(get_current_user)):
+    return run_churn_prediction(customer)
+
+
+@api_router.post(
+    "/predict_spend",
+    response_model=SpendPredictionResponse,
+    summary="Predict 90-Day Customer Spend",
+    tags=["ML Predictions"]
+)
+def predict_future_spend(customer: CustomerData, current_user=Depends(get_current_user)):
+    return run_spend_prediction(customer)
+
+
+
+app.include_router(api_router)
+app.include_router(prediction_router)
+app.include_router(user_router)
+
+
+
