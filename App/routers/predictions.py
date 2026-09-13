@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from database import get_db
-from App.models import Prediction
-from App.auth import get_current_user
+from ..database import get_db
+from ..models import Prediction
+from ..auth import get_current_user
 
 
 router = APIRouter(prefix="/api/v1", tags=["ML Predictions"])
@@ -16,4 +16,3 @@ def router_test():
 def get_predictions(db: Session = Depends(get_db) , 
                     current_user = Depends(get_current_user)):
     return current_user.predictions
-

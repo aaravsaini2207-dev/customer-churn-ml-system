@@ -7,15 +7,15 @@ import shap
 import pandas as pd
 
 from sqlalchemy.orm import Session
-from database import Base, engine, get_db
-from App.models import User, Prediction
+from .database import Base, engine, get_db, create_tables
+from .models import User, Prediction
 
 from datetime import datetime
 
-from App.routers.predictions import router as prediction_router
-from App.routers.users import router as user_router
+from .routers.predictions import router as prediction_router
+from .routers.users import router as user_router
 
-from App.auth import get_current_user
+from .auth import get_current_user
 
 
 # Create FastAPI application
@@ -23,8 +23,11 @@ app = FastAPI(
     title= "Retail Customer Churn Prediction API",
     description = "API for predicting customer churn using XGBoost",
     version = "1.0.0"
-)
+)  
 api_router = APIRouter(prefix="/api/v1")
+
+# Create all tables on startup
+create_tables()
 
 app.add_middleware(
     CORSMiddleware,

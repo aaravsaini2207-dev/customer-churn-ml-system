@@ -1,4 +1,22 @@
 services:
+  db:
+    image: postgres:18
+    container_name: churn-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "2207:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   api:
     build:
       context: .
@@ -6,10 +24,32 @@ services:
     container_name: churn-api
     ports:
       - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      SECRET_KEY: ${SECRET_KEY}
+      ALGORITHM: ${ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
     volumes:
       - ./App:/app/app
-      - ./Model:/app/model
+      - ./Model:/app/Model
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    develop:
+      watch:
+        - path: ./App
+          action: sync
+          target: /app/app
+        - path: ./Model
+          action: sync
+          target: /app/Model
 
   frontend:
     build:
@@ -19,9 +59,23 @@ services:
     ports:
       - "8501:8501"
     environment:
-      - STREAMLIT_SERVER_HEADLESS=true
+      STREAMLIT_SERVER_HEADLESS: "true"
     volumes:
       - ./streamlit_app.py:/app/streamlit_app.py
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    develop:
+      watch:
+        - path: ./streamlit_app.py
+          action: sync
+          target: /app/streamlit_app.py
+
+volumes:
+  postgres_data:

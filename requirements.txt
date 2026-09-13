@@ -9,3 +9,8 @@ pandas==2.3.3
 shap==0.51.0
 streamlit
 requests
+sqlalchemy
+python-dotenv
+psycopg2-binary
+python-jose[cryptography]
+passlib[bcrypt]

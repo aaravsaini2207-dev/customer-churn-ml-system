@@ -3,10 +3,10 @@ from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
 
-from database import get_db
-from App.models import User
+from ..database import get_db
+from ..models import User
 
-from App.auth import (verify_password , hash_password , create_access_token)
+from ..auth import (verify_password , hash_password , create_access_token)
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
