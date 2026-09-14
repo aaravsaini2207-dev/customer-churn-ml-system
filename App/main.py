@@ -19,6 +19,9 @@ from .auth import get_current_user
 
 from App.exceptions import general_exception_handler
 
+import logging
+from App.logging_config import setup_logging
+
 
 # Create FastAPI application
 app = FastAPI(
@@ -28,6 +31,9 @@ app = FastAPI(
 )  
 
 app.add_exception_handler(Exception, general_exception_handler)
+
+setup_logging()
+logger = logging.getLogger(__name__)
 
 api_router = APIRouter(prefix="/api/v1")
 
@@ -217,6 +223,10 @@ class PredictionHistoryResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 # Test endpoint
+@app.on_event("startup")
+async def startup_event():
+    logger.info("Customer Churn API started successfully")
+    
 @api_router.get("/")
 def home():
     return {'message': "Retail Customer Churn Prediction API is running!"}
