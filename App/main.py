@@ -17,6 +17,8 @@ from .routers.users import router as user_router
 
 from .auth import get_current_user
 
+from App.exceptions import general_exception_handler
+
 
 # Create FastAPI application
 app = FastAPI(
@@ -24,6 +26,9 @@ app = FastAPI(
     description = "API for predicting customer churn using XGBoost",
     version = "1.0.0"
 )  
+
+app.add_exception_handler(Exception, general_exception_handler)
+
 api_router = APIRouter(prefix="/api/v1")
 
 
