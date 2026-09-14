@@ -7,7 +7,7 @@ import shap
 import pandas as pd
 
 from sqlalchemy.orm import Session
-from .database import Base, engine, get_db, create_tables
+from .database import Base, engine, get_db
 from .models import User, Prediction
 
 from datetime import datetime
@@ -26,8 +26,7 @@ app = FastAPI(
 )  
 api_router = APIRouter(prefix="/api/v1")
 
-# Create all tables on startup
-create_tables()
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -215,7 +214,7 @@ class PredictionHistoryResponse(BaseModel):
 # Test endpoint
 @api_router.get("/")
 def home():
-    return {'message': "Retail Churn Prediction API is running!"}
+    return {'message': "Retail Customer Churn Prediction API is running!"}
 
 @api_router.get("/health" , response_model = HealthResponse , description="Check API Health" , tags=["Health"])
 def health():
