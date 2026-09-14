@@ -14,7 +14,7 @@ class UserCreate(BaseModel):
     email: str
     password: str
 
-@router.post("/")
+@router.post("/" , status_code = 201)
 def create_user(user: UserCreate , db: Session = Depends(get_db)):
     existing_user = db.query(User).filter(User.email == user.email).first()
     if existing_user:

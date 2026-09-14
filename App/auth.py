@@ -15,19 +15,13 @@ import hashlib
 import hmac
 import secrets
 
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
+from App.config import settings
 
 router = APIRouter()
 
-SECRET_KEY = os.getenv("SECRET_KEY")
-if not SECRET_KEY:
-     raise RuntimeError("SECRET_KEY environment variable is not set")
-
-ALGORITHM = os.getenv("ALGORITHM","HS256")
-ACCESS_TOKEN_EXPIRE_MINUTES = int( os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30") )
+SECRET_KEY = settings.secret_key
+ALGORITHM = settings.algorithm
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
 
 
 def hash_password(password: str) -> str:
