@@ -417,13 +417,6 @@ body {
   background: var(--shap-pos);
 }
 
-.shap-w-78 { width: 78%; }
-.shap-w-64 { width: 64%; }
-.shap-w-52 { width: 52%; }
-.shap-w-40 { width: 40%; }
-.shap-w-28 { width: 28%; }
-.shap-w-16 { width: 16%; }
-
 .shap-score {
   font-size: 0.82rem;
   font-weight: 700;

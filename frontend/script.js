@@ -75,15 +75,11 @@ function formatPercent(probability) {
   return (probability * 100).toFixed(2) + "%";
 }
 
-function formatSpend(amount, currency) {
-  const formatted = Number(amount).toLocaleString("en-GB", {
+function formatSpend(amount, currency = "₹") {
+  const formatted = Number(amount).toLocaleString("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   });
-
-  if (!currency) {
-    return formatted;
-  }
 
   return currency + formatted;
 }
@@ -130,9 +126,6 @@ function renderResults(result) {
     : "Decision threshold " + threshold.toFixed(2);
 
   recommendationText.textContent = result.recommendation || "No recommendation returned.";
-  resultsCaption.textContent = "Live prediction from the deployed XGBoost API.";
-  shapCaption.textContent =
-    "SHAP values from this prediction. Bars to the right increase predicted churn risk; bars to the left reduce it.";
 }
 
 function renderSpend(result) {
@@ -142,10 +135,7 @@ function renderSpend(result) {
     throw new Error("The spend prediction API did not return a valid amount.");
   }
 
-  spendValue.textContent = "£" + Number(amount).toLocaleString("en-GB", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
+  spendValue.textContent = formatSpend(amount);
   spendNote.textContent = "Estimated customer spend over the next 90 days.";
 }
 
