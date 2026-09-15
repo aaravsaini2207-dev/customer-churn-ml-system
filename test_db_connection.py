@@ -14,7 +14,7 @@ parsed = urlparse(DATABASE_URL)
 print(f"Host: {parsed.hostname}")
 print(f"Port: {parsed.port}")
 print(f"User: {parsed.username}")
-print(f"Password length: {len(parsed.password)}")
+print(f"Password length: {len(parsed.password) if parsed.password else 'None'}")
 print(f"Database: {parsed.path.lstrip('/')}")
 
 try:
