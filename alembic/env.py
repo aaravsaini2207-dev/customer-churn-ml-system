@@ -6,6 +6,12 @@ from pathlib import Path
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
+from App.config import settings
+from database import Base
+from App.models import User, Prediction
+
+target_metadata = Base.metadata
+
 from alembic import context
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -15,13 +21,19 @@ if str(APP_DIR) not in sys.path:
     sys.path.insert(0, str(APP_DIR))
 
 from database import Base
-import models  # noqa: F401  # type: ignore[import-not-found]
+from App import models  # noqa: F401  # type: ignore[import-not-found]
 
 target_metadata = Base.metadata
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+
+config.set_main_option(
+    "sqlalchemy.url",
+    settings.database_url
+)
+target_metadata = Base.metadata
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

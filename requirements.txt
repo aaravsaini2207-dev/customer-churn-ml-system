@@ -16,3 +16,4 @@ python-jose[cryptography]
 passlib[bcrypt]
 httpx2
 pydantic-settings
+alembic
