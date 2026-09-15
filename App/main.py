@@ -11,6 +11,7 @@ from .database import Base, engine, get_db
 from .models import User, Prediction
 
 from datetime import datetime
+import time
 
 from .routers.predictions import router as prediction_router
 from .routers.users import router as user_router
@@ -41,9 +42,7 @@ api_router = APIRouter(prefix="/api/v1")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://retail-churn-frontend.onrender.com",
-    ],
+    allow_origins=["https://retail-churn-frontend.onrender.com",],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -72,6 +71,9 @@ except FileNotFoundError as e:
     raise RuntimeError(f"Spend model files not found at {BASE_DIR / 'Model'}: {e}")
 
 explainer = shap.TreeExplainer(model)
+
+CHURN_MODEL_VERSION = "xgboost-v1"
+SPEND_MODEL_VERSION = "randomforest-v1"
 
 # Input data structure
 class CustomerData(BaseModel):
@@ -236,6 +238,7 @@ def health():
     return {"status": "healthy", "churn_model_loaded": model is not None, "spend_model_loaded": spend_model is not None}
 
 def run_churn_prediction(customer: CustomerData):
+    start_time = time.perf_counter()
     features = [[
         customer.recency,
         customer.frequency,
@@ -279,6 +282,8 @@ def run_churn_prediction(customer: CustomerData):
         risk = 'Low'
         recommendation = "Maintain regular engagement and focus on personalized recommendations and cross-sell opportunities rather than aggressive retention discounts."
 
+    elapsed_time = time.perf_counter() - start_time
+    logger.info(f"Churn inference completed in {elapsed_time:.4f}s")
     return {
         "churn_probability": round(float(probability), 4),
         "prediction": prediction,
@@ -288,10 +293,12 @@ def run_churn_prediction(customer: CustomerData):
         "recommendation": recommendation,
         "model": "XGBoost",
         "features_used": 6,
-        "shap_explanation": shap_explanation
+        "shap_explanation": shap_explanation,
+        "model_version": CHURN_MODEL_VERSION
     }
 
 def run_spend_prediction(customer: CustomerData):
+    start_time = time.perf_counter()
     features = [[
         customer.recency,
         customer.frequency,
@@ -306,13 +313,18 @@ def run_spend_prediction(customer: CustomerData):
     predicted_spend = float(spend_model.predict(X_customer)[0])
     predicted_spend = max(predicted_spend, 0)
 
+    elapsed_time = time.perf_counter() - start_time
+    logger.info(f"Spend inference completed in {elapsed_time:.4f}s")
+
     return {
         "predicted_90_day_spend": round(predicted_spend, 2),
         "currency": "GBP",
         "model": "RandomForestRegressor",
         "prediction_horizon": "90_days",
         "features_used": len(spend_features),
+        "model_version": SPEND_MODEL_VERSION,
     }
+
 
 @api_router.post(
     "/customer-intelligence",
