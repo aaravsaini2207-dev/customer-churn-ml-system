@@ -3,53 +3,35 @@ import sys
 from logging.config import fileConfig
 from pathlib import Path
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-
-from App.config import settings
-from database import Base
-from App.models import User, Prediction
-
-target_metadata = Base.metadata
-
+from dotenv import load_dotenv
+from sqlalchemy import engine_from_config, pool
 from alembic import context
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 APP_DIR = PROJECT_ROOT / "App"
 
-if str(APP_DIR) not in sys.path:
-    sys.path.insert(0, str(APP_DIR))
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
-from database import Base
-from App import models  # noqa: F401  # type: ignore[import-not-found]
+load_dotenv(PROJECT_ROOT / ".env")
+
+from App.database import Base
+from App import models  # noqa: F401
 
 target_metadata = Base.metadata
 
-# this is the Alembic Config object, which provides
-# access to the values within the .ini file in use.
 config = context.config
 
-config.set_main_option(
-    "sqlalchemy.url",
-    settings.database_url
-)
-target_metadata = Base.metadata
+# Read DATABASE_URL from environment
+database_url = os.getenv("DATABASE_URL")
+if not database_url:
+    from App.config import settings
+    database_url = settings.database_url
 
-# Interpret the config file for Python logging.
-# This line sets up loggers basically.
+config.set_main_option("sqlalchemy.url", database_url)
+
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
-
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-
-
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
 
 
 def run_migrations_offline() -> None:
@@ -83,8 +65,11 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    configuration = config.get_section(config.config_ini_section, {})
+    configuration["sqlalchemy.url"] = config.get_main_option("sqlalchemy.url")
+    
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        configuration,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )

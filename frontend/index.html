@@ -3,147 +3,342 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Customer Churn Intelligence</title>
+  <meta name="description" content="ChurnIQ — AI-powered customer churn intelligence and retention analytics.">
+  <title>ChurnIQ — Customer Intelligence</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="page">
-    <header class="hero">
-      <p class="eyebrow">Retail analytics</p>
-      <h1>Customer Churn Intelligence</h1>
-      <p class="subtitle">
-        Predict customer churn risk from transactional behavior using a machine-learning model,
-        then review the drivers behind each score.
-      </p>
-    </header>
 
-    <main class="layout">
-      <section class="card" aria-labelledby="profile-heading">
-        <div class="card-head">
-          <h2 id="profile-heading">Customer profile</h2>
-          <p>Enter six behavioral features used by the churn model.</p>
+  <!-- AUTH SCREEN -->
+  <div id="auth-screen" class="auth-screen">
+    <div class="auth-shell">
+
+      <div class="auth-brand">
+        <div class="brand-mark">C</div>
+        <span>ChurnIQ</span>
+      </div>
+
+      <div class="auth-card">
+        <div class="auth-heading">
+          <span class="status-dot"></span>
+          <span>AI-powered retention intelligence</span>
         </div>
 
-        <p id="error-banner" class="error-banner" hidden role="alert"></p>
+        <h1 id="auth-title">Welcome back</h1>
+        <p id="auth-subtitle">
+          Sign in to access your customer intelligence dashboard.
+        </p>
 
-        <form id="profile-form" class="profile-form" action="#" method="get">
-          <div class="field-grid">
-            <label class="field">
-              <span class="field-label">Recency</span>
-              <span class="field-hint">Days since last purchase</span>
-              <input type="number" name="recency" min="0" step="1" value="30" inputmode="numeric" required>
-            </label>
+        <div id="auth-error" class="auth-error" hidden></div>
 
-            <label class="field">
-              <span class="field-label">Frequency</span>
-              <span class="field-hint">Total distinct orders</span>
-              <input type="number" name="frequency" min="1" step="1" value="10" inputmode="numeric" required>
-            </label>
+        <!-- LOGIN -->
+        <form id="login-form" class="auth-form">
+          <label>
+            <span>Email address</span>
+            <input
+              id="login-email"
+              type="email"
+              autocomplete="email"
+              placeholder="you@company.com"
+              required
+            >
+          </label>
 
-            <label class="field">
-              <span class="field-label">Monetary</span>
-              <span class="field-hint">Total customer revenue</span>
-              <input type="number" name="monetary" min="0" step="0.01" value="1000" inputmode="decimal" required>
-            </label>
+          <label>
+            <span>Password</span>
+            <input
+              id="login-password"
+              type="password"
+              autocomplete="current-password"
+              placeholder="Enter your password"
+              required
+            >
+          </label>
 
-            <label class="field">
-              <span class="field-label">Average Order Value</span>
-              <span class="field-hint">Revenue per order</span>
-              <input type="number" name="average_order_value" min="0" step="0.01" value="100" inputmode="decimal" required>
-            </label>
+          <button id="login-btn" class="primary-btn" type="submit">
+            Sign in
+            <span>→</span>
+          </button>
+        </form>
 
-            <label class="field">
-              <span class="field-label">Unique Products</span>
-              <span class="field-hint">Distinct products purchased</span>
-              <input type="number" name="unique_products" min="1" step="1" value="5" inputmode="numeric" required>
-            </label>
+        <!-- REGISTER -->
+        <form id="register-form" class="auth-form" hidden>
+          <label>
+            <span>Email address</span>
+            <input
+              id="register-email"
+              type="email"
+              autocomplete="email"
+              placeholder="you@company.com"
+              required
+            >
+          </label>
 
-            <label class="field">
-              <span class="field-label">Customer Lifetime Days</span>
-              <span class="field-hint">Days between first and last purchase</span>
-              <input type="number" name="customer_lifetime_days" min="0" step="1" value="100" inputmode="numeric" required>
-            </label>
+          <label>
+            <span>Password</span>
+            <input
+              id="register-password"
+              type="password"
+              autocomplete="new-password"
+              minlength="6"
+              placeholder="Create a password"
+              required
+            >
+          </label>
+
+          <button id="register-btn" class="primary-btn" type="submit">
+            Create account
+            <span>→</span>
+          </button>
+        </form>
+
+        <div class="auth-switch">
+          <span id="auth-switch-text">Don't have an account?</span>
+          <button id="auth-switch-btn" type="button">Create one</button>
+        </div>
+      </div>
+
+      <p class="auth-footer">
+        Customer intelligence • Machine learning • Retention analytics
+      </p>
+    </div>
+  </div>
+
+
+  <!-- APPLICATION -->
+  <div id="app-screen" class="app-screen" hidden>
+
+    <header class="topbar">
+      <div class="topbar-inner">
+
+        <a class="brand" href="#">
+          <span class="brand-mark">C</span>
+          <span>
+            <strong>ChurnIQ</strong>
+            <small>Customer Intelligence</small>
+          </span>
+        </a>
+
+        <div class="topbar-actions">
+          <div class="user-pill">
+            <span class="user-avatar" id="user-avatar">U</span>
+            <span id="user-email">User</span>
           </div>
 
-          <button id="analyze-btn" class="analyze-btn" type="button">Analyze Customer</button>
-        </form>
-      </section>
-
-      <section
-        class="card"
-        aria-labelledby="results-heading"
-        aria-live="polite"
-      >
-        <div class="card-head">
-          <h2 id="results-heading">Prediction results</h2>
-          <p id="results-caption">Churn risk and customer value based on the deployed ML models.</p>
+          <button id="logout-btn" class="logout-btn" type="button">
+            Log out
+          </button>
         </div>
 
-        <div class="metric-grid">
-          <article class="metric">
-            <p class="metric-label">Churn Probability</p>
-            <p id="probability-value" class="metric-value">—</p>
-            <div id="probability-meter" class="meter" role="img" aria-label="Churn probability 61 percent">
-              <span id="meter-fill" class="meter-fill"></span>
+      </div>
+    </header>
+
+    <main class="dashboard">
+
+      <section class="dashboard-hero">
+        <div>
+          <p class="eyebrow">Customer intelligence</p>
+          <h1>Understand who is likely to churn.</h1>
+          <p>
+            Use behavioral signals to estimate churn risk, customer value,
+            and the factors driving each prediction.
+          </p>
+        </div>
+
+        <div class="hero-status">
+          <span class="live-dot"></span>
+          <span>ML system online</span>
+        </div>
+      </section>
+
+
+      <div id="error-banner" class="error-banner" hidden role="alert"></div>
+
+
+      <section class="dashboard-grid">
+
+        <!-- CUSTOMER INPUT -->
+        <section class="card input-card">
+          <div class="section-heading">
+            <div>
+              <span class="section-kicker">01 / Profile</span>
+              <h2>Customer profile</h2>
             </div>
-          </article>
 
-          <article class="metric">
-            <p class="metric-label">Risk Level</p>
-            <p class="metric-value">
-              <span id="risk-badge" class="badge">—</span>
-            </p>
-            <p id="risk-note" class="metric-note">Monitor this customer</p>
-          </article>
+            <span class="model-tag">XGBoost</span>
+          </div>
 
-          <article class="metric">
-            <p class="metric-label">Prediction</p>
-            <p id="prediction-value" class="metric-value">—</p>
-            <p id="prediction-note" class="metric-note">Above decision threshold 0.40</p>
-          </article>
-
-          <article class="metric">
-            <p class="metric-label">Predicted 90-Day Spend</p>
-            <p id="spend-value" class="metric-value">—</p>
-            <p id="spend-note" class="metric-note">Estimated customer spend over the next 90 days.</p>
-          </article>
-        </div>
-
-        <div class="recommendation">
-          <h3>Recommendation</h3>
-          <p id="recommendation-text">
-            Analyze a customer to receive a personalized retention recommendation.
+          <p class="section-description">
+            Enter the behavioral features used by the deployed churn model.
           </p>
-        </div>
+
+          <form id="profile-form">
+
+            <div class="field-grid">
+
+              <label class="field">
+                <span class="field-label">Recency</span>
+                <span class="field-hint">Days since last purchase</span>
+                <input type="number" name="recency" min="0" step="1" value="30" required>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Frequency</span>
+                <span class="field-hint">Total distinct orders</span>
+                <input type="number" name="frequency" min="1" step="1" value="10" required>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Monetary</span>
+                <span class="field-hint">Total customer revenue</span>
+                <input type="number" name="monetary" min="0" step="0.01" value="1000" required>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Average order value</span>
+                <span class="field-hint">Revenue generated per order</span>
+                <input type="number" name="average_order_value" min="0" step="0.01" value="100" required>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Unique products</span>
+                <span class="field-hint">Distinct products purchased</span>
+                <input type="number" name="unique_products" min="1" step="1" value="5" required>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Customer lifetime</span>
+                <span class="field-hint">Days between first and last purchase</span>
+                <input type="number" name="customer_lifetime_days" min="0" step="1" value="100" required>
+              </label>
+
+            </div>
+
+            <button id="analyze-btn" class="analyze-btn" type="submit">
+              <span>Analyze customer</span>
+              <span class="button-arrow">→</span>
+            </button>
+
+          </form>
+        </section>
+
+
+        <!-- RESULTS -->
+        <section class="card results-card">
+
+          <div class="section-heading">
+            <div>
+              <span class="section-kicker">02 / Intelligence</span>
+              <h2>Prediction results</h2>
+            </div>
+
+            <span class="secure-tag">● Secure</span>
+          </div>
+
+          <p id="results-caption" class="section-description">
+            Churn probability and customer value generated by the deployed ML models.
+          </p>
+
+          <div class="metric-grid">
+
+            <article class="metric metric-primary">
+              <span class="metric-label">Churn probability</span>
+              <strong id="probability-value">—</strong>
+
+              <div class="probability-track">
+                <span id="meter-fill"></span>
+              </div>
+
+              <small id="probability-description">
+                Awaiting customer analysis
+              </small>
+            </article>
+
+            <article class="metric">
+              <span class="metric-label">Risk level</span>
+              <strong id="risk-badge" class="badge">—</strong>
+              <small id="risk-note">Analyze a customer to determine risk.</small>
+            </article>
+
+            <article class="metric">
+              <span class="metric-label">Prediction</span>
+              <strong id="prediction-value">—</strong>
+              <small id="prediction-note">Decision threshold: —</small>
+            </article>
+
+            <article class="metric">
+              <span class="metric-label">90-day spend</span>
+              <strong id="spend-value">—</strong>
+              <small id="spend-note">Estimated future customer spend.</small>
+            </article>
+
+          </div>
+
+          <div class="recommendation">
+            <div class="recommendation-icon">↗</div>
+            <div>
+              <span>Recommended action</span>
+              <p id="recommendation-text">
+                Analyze a customer to receive a personalized retention recommendation.
+              </p>
+            </div>
+          </div>
+
+        </section>
+
+
+        <!-- SHAP -->
+        <section class="card card-wide explanation-card">
+
+          <div class="section-heading">
+            <div>
+              <span class="section-kicker">03 / Explainability</span>
+              <h2>Why this prediction?</h2>
+            </div>
+
+            <span class="model-tag">SHAP</span>
+          </div>
+
+          <p id="shap-caption" class="section-description">
+            Feature-level explanation showing which behaviors increase or reduce predicted churn risk.
+          </p>
+
+          <div class="shap-legend">
+            <span>
+              <i class="legend-positive"></i>
+              Increases churn risk
+            </span>
+
+            <span>
+              <i class="legend-negative"></i>
+              Reduces churn risk
+            </span>
+          </div>
+
+          <div id="shap-chart" class="shap-chart">
+            <div class="shap-placeholder">
+              <div class="placeholder-icon">✦</div>
+              <strong>Model explanation will appear here</strong>
+              <span>
+                Analyze a customer to visualize the behavioral drivers behind the prediction.
+              </span>
+            </div>
+          </div>
+
+        </section>
+
       </section>
 
-      <section class="card card-wide" aria-labelledby="shap-heading">
-        <div class="card-head">
-          <h2 id="shap-heading">Why did the model make this prediction?</h2>
-          <p id="shap-caption">
-            Model explanation showing which customer behaviors increase or reduce predicted churn risk.
-          </p>
-        </div>
+      <footer class="dashboard-footer">
+        <span>ChurnIQ</span>
+        <span>Machine learning powered customer retention</span>
+        <span>FastAPI · XGBoost · SHAP</span>
+      </footer>
 
-        <div class="shap-legend">
-          <span class="legend-item">
-            <span class="legend-swatch legend-swatch-neg"></span>
-            Reduces churn risk
-          </span>
-          <span class="legend-item">
-            <span class="legend-swatch legend-swatch-pos"></span>
-            Increases churn risk
-          </span>
-        </div>
-
-        <div id="shap-chart" class="shap-chart">
-          <p class="empty-state">
-            Analyze a customer to see the features influencing the prediction.
-          </p>
-        </div>
-      </section>
     </main>
   </div>
+
   <script src="script.js"></script>
 </body>
 </html>
+
