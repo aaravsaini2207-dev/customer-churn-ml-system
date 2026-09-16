@@ -285,7 +285,7 @@ The dashboard provides a single customer-level view containing:
 
 ### Dashboard Preview
 
-![Customer Churn Intelligence Dashboard](images/dashboard.png)
+![Customer Churn Intelligence Dashboard](images/dashboard-new.png)
 
 ---
 
