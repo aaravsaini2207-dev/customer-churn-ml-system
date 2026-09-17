@@ -1,43 +1,31 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from fastapi.security import OAuth2PasswordRequestForm
-from pydantic import BaseModel
 
 from ..database import get_db
 from ..models import User
-
-from ..auth import (verify_password , hash_password , create_access_token)
+from ..auth import get_current_user
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
-class UserCreate(BaseModel):
-    email: str
-    password: str
+@router.get("me")
+def get_me(
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    firebase_uid = current_user["uid"]
+    email = current_user.get("email")
 
-@router.post("/" , status_code = 201)
-def create_user(user: UserCreate , db: Session = Depends(get_db)):
-    existing_user = db.query(User).filter(User.email == user.email).first()
-    if existing_user:
-        raise HTTPException(status_code = 400, detail = "User Already Exists")
-    
-    new_user = User(email = user.email , password = hash_password(user.password))
+    user = db.query("User").filter(User.firebase_uid == firebase_uid).first()
 
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+    if not user:
+        user = User(firebase_uid = firebase_uid, email = email)
+
+        db.add(user)
+        db.commit()
+        db.refresh(user)
 
     return {
-        "id": new_user.id, "email": new_user.email
+        "id": firebase_uid,
+        "firebase_uid": user.firebase_uid,
+        "email": user.email
     }
-
-@router.post("/login")
-def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == form_data.username).first()          #username = user's email
-
-    if not user or not verify_password(form_data.password, user.password):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-
-    access_token = create_access_token(data={"sub": user.email})
-    return {"access_token": access_token, "token_type": "bearer"}

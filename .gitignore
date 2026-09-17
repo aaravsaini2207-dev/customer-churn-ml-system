@@ -31,3 +31,6 @@ htmlcov/
 # Alembic
 # Keep migrations tracked!
 # alembic/versions/ should NOT be ignored
+
+# Firebase secrets
+App/firebase-service-account.json

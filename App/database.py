@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy import Column, Integer, Float, String, DateTime
 
-from App.config import settings
+from .config import settings
 
 
 engine = create_engine(settings.database_url)
