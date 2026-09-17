@@ -171,7 +171,8 @@ async function loginUser(event) {
   const {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
-    sendEmailVerification
+    sendEmailVerification,
+    reload
   } = window.firebaseFunctions;
 
   const email = loginEmail.value.trim();
@@ -188,6 +189,9 @@ async function loginUser(event) {
     );
 
     const user = userCredential.user;
+
+    // Refresh Firebase user information
+    await reload(user);
 
     if (!user.emailVerified) {
       showAuthError("Please verify your email before logging in.");
