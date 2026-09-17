@@ -785,4 +785,4 @@ if (getToken() && getStoredEmail()) {
 } else {
   showAuth();
 }
-
+}
