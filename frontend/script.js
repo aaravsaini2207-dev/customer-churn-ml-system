@@ -167,6 +167,7 @@ async function loginUser(event) {
   clearAuthError();
 
   const auth = window.firebaseAuth;
+
   const {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
@@ -190,8 +191,10 @@ async function loginUser(event) {
 
     if (!user.emailVerified) {
       showAuthError("Please verify your email before logging in.");
+
       loginBtn.disabled = false;
       loginBtn.innerHTML = 'Sign in <span>→</span>';
+
       return;
     }
 
@@ -200,14 +203,21 @@ async function loginUser(event) {
     saveSession(token, email);
 
     loginForm.reset();
+
     showApp();
 
   } catch (error) {
     console.error(error);
-    showAuthError(error.message || "Unable to sign in.");
+
+    showAuthError(
+      error.message || "Unable to sign in."
+    );
+
   } finally {
     loginBtn.disabled = false;
-    loginBtn.innerHTML = 'Sign in <span>→</span>';
+
+    loginBtn.innerHTML =
+      'Sign in <span>→</span>';
   }
 }
 
@@ -221,6 +231,7 @@ async function registerUser(event) {
   clearAuthError();
 
   const auth = window.firebaseAuth;
+
   const {
     createUserWithEmailAndPassword,
     sendEmailVerification
@@ -233,13 +244,16 @@ async function registerUser(event) {
   registerBtn.innerHTML = "Creating account…";
 
   try {
-    const userCredential = await createUserWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
+    const userCredential =
+      await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
 
-    await sendEmailVerification(userCredential.user);
+    await sendEmailVerification(
+      userCredential.user
+    );
 
     registerForm.reset();
 
@@ -257,14 +271,20 @@ async function registerUser(event) {
 
   } catch (error) {
     console.error(error);
+
     authError.style.color = "";
     authError.style.background = "";
     authError.style.borderColor = "";
 
-    showAuthError(error.message || "Unable to create account.");
+    showAuthError(
+      error.message || "Unable to create account."
+    );
+
   } finally {
     registerBtn.disabled = false;
-    registerBtn.innerHTML = 'Create account <span>→</span>';
+
+    registerBtn.innerHTML =
+      'Create account <span>→</span>';
   }
 }
 
@@ -291,6 +311,7 @@ logoutBtn.addEventListener("click", function () {
 
 function numberFrom(name, asInteger) {
   const input = form.elements[name];
+
   const raw = input.value.trim();
 
   if (raw === "") {
@@ -323,17 +344,31 @@ function numberFrom(name, asInteger) {
 
 function readPayload() {
   return {
-    recency: numberFrom("recency", true),
-    frequency: numberFrom("frequency", true),
-    monetary: numberFrom("monetary", false),
+    recency: numberFrom(
+      "recency",
+      true
+    ),
+
+    frequency: numberFrom(
+      "frequency",
+      true
+    ),
+
+    monetary: numberFrom(
+      "monetary",
+      false
+    ),
+
     average_order_value: numberFrom(
       "average_order_value",
       false
     ),
+
     unique_products: numberFrom(
       "unique_products",
       true
     ),
+
     customer_lifetime_days: numberFrom(
       "customer_lifetime_days",
       true
@@ -376,7 +411,9 @@ function formatSpend(amount) {
 ========================= */
 
 function riskMeta(risk) {
-  const value = String(risk || "").toLowerCase();
+  const value = String(
+    risk || ""
+  ).toLowerCase();
 
   if (value === "high") {
     return {
@@ -399,16 +436,29 @@ function riskMeta(risk) {
 }
 
 function renderResults(result) {
-  const probability = Number(result.churn_probability);
-  const threshold = Number(result.threshold);
-  const prediction = Number(result.prediction);
+  const probability =
+    Number(result.churn_probability);
 
-  const risk = result.risk || "—";
-  const clamped = Math.min(Math.max(probability, 0), 1);
+  const threshold =
+    Number(result.threshold);
 
-  const meta = riskMeta(risk);
+  const prediction =
+    Number(result.prediction);
 
-  probabilityValue.textContent = formatPercent(probability);
+  const risk =
+    result.risk || "—";
+
+  const clamped =
+    Math.min(
+      Math.max(probability, 0),
+      1
+    );
+
+  const meta =
+    riskMeta(risk);
+
+  probabilityValue.textContent =
+    formatPercent(probability);
 
   meterFill.style.width =
     `${clamped * 100}%`;
@@ -420,10 +470,14 @@ function renderResults(result) {
         ? "Moderate probability of customer churn."
         : "Lower probability of customer churn.";
 
-  riskBadge.className = meta.className;
-  riskBadge.textContent = risk;
+  riskBadge.className =
+    meta.className;
 
-  riskNote.textContent = meta.note;
+  riskBadge.textContent =
+    risk;
+
+  riskNote.textContent =
+    meta.note;
 
   predictionValue.textContent =
     prediction === 1
@@ -442,7 +496,9 @@ function renderResults(result) {
 
 function renderSpend(result) {
   const amount =
-    Number(result.predicted_90_day_spend);
+    Number(
+      result.predicted_90_day_spend
+    );
 
   if (!Number.isFinite(amount)) {
     throw new Error(
@@ -462,15 +518,22 @@ function renderSpend(result) {
    SHAP
 ========================= */
 
-function createEl(tag, className, text) {
-  const el = document.createElement(tag);
+function createEl(
+  tag,
+  className,
+  text
+) {
+  const el =
+    document.createElement(tag);
 
   if (className) {
-    el.className = className;
+    el.className =
+      className;
   }
 
   if (text !== undefined) {
-    el.textContent = text;
+    el.textContent =
+      text;
   }
 
   return el;
@@ -483,10 +546,11 @@ function renderShap(explanation) {
     !Array.isArray(explanation) ||
     explanation.length === 0
   ) {
-    const empty = createEl(
-      "div",
-      "shap-placeholder"
-    );
+    const empty =
+      createEl(
+        "div",
+        "shap-placeholder"
+      );
 
     empty.appendChild(
       createEl(
@@ -512,32 +576,46 @@ function renderShap(explanation) {
       )
     );
 
-    shapChart.appendChild(empty);
+    shapChart.appendChild(
+      empty
+    );
 
     return;
   }
 
-  const rows = explanation
-    .slice()
-    .sort(function (a, b) {
-      return (
-        Math.abs(Number(b.impact)) -
-        Math.abs(Number(a.impact))
-      );
-    });
+  const rows =
+    explanation
+      .slice()
+      .sort(function (a, b) {
+        return (
+          Math.abs(
+            Number(b.impact)
+          ) -
+          Math.abs(
+            Number(a.impact)
+          )
+        );
+      });
 
-  const maxAbs = Math.max.apply(
-    null,
-    rows.map(function (item) {
-      return Math.abs(
-        Number(item.impact)
-      ) || 0;
-    })
-  );
+  const maxAbs =
+    Math.max.apply(
+      null,
+      rows.map(function (item) {
+        return (
+          Math.abs(
+            Number(item.impact)
+          ) || 0
+        );
+      })
+    );
 
   rows.forEach(function (item) {
-    const impact = Number(item.impact);
-    const increasesRisk = impact > 0;
+
+    const impact =
+      Number(item.impact);
+
+    const increasesRisk =
+      impact > 0;
 
     const widthPct =
       maxAbs > 0
@@ -549,7 +627,10 @@ function renderShap(explanation) {
       impact.toFixed(3);
 
     const row =
-      createEl("div", "shap-row");
+      createEl(
+        "div",
+        "shap-row"
+      );
 
     row.appendChild(
       createEl(
@@ -560,20 +641,30 @@ function renderShap(explanation) {
     );
 
     const plot =
-      createEl("div", "shap-plot");
+      createEl(
+        "div",
+        "shap-plot"
+      );
 
     const left =
-      createEl("div", "shap-half shap-half-left");
+      createEl(
+        "div",
+        "shap-half shap-half-left"
+      );
 
     const right =
-      createEl("div", "shap-half shap-half-right");
+      createEl(
+        "div",
+        "shap-half shap-half-right"
+      );
 
-    const bar = createEl(
-      "span",
-      increasesRisk
-        ? "shap-bar shap-bar-pos"
-        : "shap-bar shap-bar-neg"
-    );
+    const bar =
+      createEl(
+        "span",
+        increasesRisk
+          ? "shap-bar shap-bar-pos"
+          : "shap-bar shap-bar-neg"
+      );
 
     bar.style.width =
       widthPct + "%";
@@ -587,7 +678,10 @@ function renderShap(explanation) {
     plot.appendChild(left);
 
     plot.appendChild(
-      createEl("div", "shap-axis")
+      createEl(
+        "div",
+        "shap-axis"
+      )
     );
 
     plot.appendChild(right);
@@ -623,7 +717,8 @@ async function postJson(
   payload,
   label
 ) {
-  const token = getToken();
+  const token =
+    getToken();
 
   if (!token) {
     throw new Error(
@@ -631,19 +726,29 @@ async function postJson(
     );
   }
 
-  const response = await fetch(url, {
-    method: "POST",
+  const response =
+    await fetch(
+      url,
+      {
+        method: "POST",
 
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`
-    },
+        headers: {
+          "Content-Type":
+            "application/json",
 
-    body: JSON.stringify(payload)
-  });
+          "Authorization":
+            `Bearer ${token}`
+        },
+
+        body:
+          JSON.stringify(payload)
+      }
+    );
 
   if (response.status === 401) {
+
     clearSession();
+
     showAuth();
 
     throw new Error(
@@ -652,21 +757,27 @@ async function postJson(
   }
 
   if (!response.ok) {
+
     let message =
       `The ${label} API returned status ${response.status}.`;
 
     try {
+
       const errorData =
         await response.json();
 
       if (errorData.detail) {
-        message = errorData.detail;
+        message =
+          errorData.detail;
       }
+
     } catch (_) {
       // Keep default message.
     }
 
-    throw new Error(message);
+    throw new Error(
+      message
+    );
   }
 
   return response.json();
@@ -678,6 +789,7 @@ async function postJson(
 ========================= */
 
 async function analyzeCustomer(event) {
+
   if (event) {
     event.preventDefault();
   }
@@ -692,35 +804,54 @@ async function analyzeCustomer(event) {
   let payload;
 
   try {
-    payload = readPayload();
+
+    payload =
+      readPayload();
+
   } catch (error) {
-    showError(error.message);
+
+    showError(
+      error.message
+    );
+
     return;
   }
 
   setLoading(true);
 
   try {
-    const result = await postJson(
-      INTELLIGENCE_API,
-      payload,
-      "customer intelligence"
-    );
 
-    renderResults(result);
+    const result =
+      await postJson(
+        INTELLIGENCE_API,
+        payload,
+        "customer intelligence"
+      );
+
+    renderResults(
+      result
+    );
 
     renderShap(
       result.shap_explanation
     );
 
-    renderSpend(result);
+    renderSpend(
+      result
+    );
 
   } catch (error) {
-    if (error.name === "TypeError") {
+
+    if (
+      error.name === "TypeError"
+    ) {
+
       showError(
         "Unable to reach the prediction API. Check your connection or try again."
       );
+
     } else {
+
       showError(
         error.message ||
         "Unable to complete this prediction."
@@ -728,6 +859,7 @@ async function analyzeCustomer(event) {
     }
 
   } finally {
+
     setLoading(false);
   }
 }
@@ -738,24 +870,33 @@ async function analyzeCustomer(event) {
 ========================= */
 
 function resetDashboard() {
-  probabilityValue.textContent = "—";
-  meterFill.style.width = "0%";
+
+  probabilityValue.textContent =
+    "—";
+
+  meterFill.style.width =
+    "0%";
 
   probabilityDescription.textContent =
     "Awaiting customer analysis";
 
-  riskBadge.className = "badge";
-  riskBadge.textContent = "—";
+  riskBadge.className =
+    "badge";
+
+  riskBadge.textContent =
+    "—";
 
   riskNote.textContent =
     "Analyze a customer to determine risk.";
 
-  predictionValue.textContent = "—";
+  predictionValue.textContent =
+    "—";
 
   predictionNote.textContent =
     "Decision threshold: —";
 
-  spendValue.textContent = "—";
+  spendValue.textContent =
+    "—";
 
   spendNote.textContent =
     "Estimated future customer spend.";
@@ -765,6 +906,111 @@ function resetDashboard() {
 
   renderShap([]);
 }
+
+
+/* =========================
+   PASSWORD VISIBILITY
+========================= */
+
+const passwordToggleButtons =
+  document.querySelectorAll(
+    ".password-toggle"
+  );
+
+passwordToggleButtons.forEach(
+  function (button) {
+
+    const target =
+      document.getElementById(
+        button.dataset.target
+      );
+
+    const openIcon =
+      button.querySelector(
+        ".eye-open"
+      );
+
+    const closedIcon =
+      button.querySelector(
+        ".eye-closed"
+      );
+
+    let hideTimer =
+      null;
+
+    button.addEventListener(
+      "click",
+      function () {
+
+        if (!target) {
+          return;
+        }
+
+        clearTimeout(
+          hideTimer
+        );
+
+        const shouldShow =
+          target.type === "password";
+
+        target.type =
+          shouldShow
+            ? "text"
+            : "password";
+
+        openIcon.hidden =
+          !shouldShow;
+
+        closedIcon.hidden =
+          shouldShow;
+
+        button.setAttribute(
+          "aria-label",
+          shouldShow
+            ? "Hide password"
+            : "Show password"
+        );
+
+        button.setAttribute(
+          "title",
+          shouldShow
+            ? "Hide password"
+            : "Show password"
+        );
+
+        if (shouldShow) {
+
+          hideTimer =
+            setTimeout(
+              function () {
+
+                target.type =
+                  "password";
+
+                openIcon.hidden =
+                  false;
+
+                closedIcon.hidden =
+                  true;
+
+                button.setAttribute(
+                  "aria-label",
+                  "Show password"
+                );
+
+                button.setAttribute(
+                  "title",
+                  "Show password"
+                );
+
+              },
+              3000
+            );
+        }
+      }
+    );
+  }
+);
 
 
 /* =========================
@@ -786,8 +1032,14 @@ form.addEventListener(
   analyzeCustomer
 );
 
-if (getToken() && getStoredEmail()) {
+if (
+  getToken() &&
+  getStoredEmail()
+) {
+
   showApp();
+
 } else {
+
   showAuth();
 }
