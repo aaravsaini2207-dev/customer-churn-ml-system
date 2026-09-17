@@ -5,7 +5,7 @@ const REGISTER_API = `${API_BASE}/users/`;
 
 const INTELLIGENCE_API = `${API_BASE}/api/v1/customer-intelligence`;
 
-const TOKEN_KEY = "churniq_access_token";
+const TOKEN_KEY = "churniq_firebase_token";
 const EMAIL_KEY = "churniq_user_email";
 
 
@@ -162,6 +162,13 @@ authSwitchBtn.addEventListener("click", function () {
    LOGIN
 ========================= */
 
+const auth = window.firebaseAuth;
+const {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendEmailVerification
+} = window.firebaseFunctions;
+
 async function loginUser(event) {
   event.preventDefault();
   clearAuthError();
@@ -173,44 +180,31 @@ async function loginUser(event) {
   loginBtn.innerHTML = "Signing in…";
 
   try {
-    const body = new URLSearchParams();
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
 
-    body.append("username", email);
-    body.append("password", password);
+    const user = userCredential.user;
 
-    const response = await fetch(LOGIN_API, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      body: body.toString()
-    });
-
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      throw new Error(
-        data.detail || "Invalid email or password."
-      );
+    if (!user.emailVerified) {
+      showAuthError("Please verify your email before logging in.");
+      loginBtn.disabled = false;
+      loginBtn.innerHTML = 'Sign in <span>→</span>';
+      return;
     }
 
-    if (!data.access_token) {
-      throw new Error("Login succeeded but no access token was returned.");
-    }
+    const token = await user.getIdToken();
 
-    saveSession(data.access_token, email);
+    saveSession(token, email);
 
     loginForm.reset();
     showApp();
 
   } catch (error) {
-    if (error.name === "TypeError") {
-      showAuthError(
-        "Unable to connect to the API. Please try again in a moment."
-      );
-    } else {
-      showAuthError(error.message || "Unable to sign in.");
-    }
+    console.error(error);
+    showAuthError(error.message || "Unable to sign in.");
   } finally {
     loginBtn.disabled = false;
     loginBtn.innerHTML = 'Sign in <span>→</span>';
@@ -233,24 +227,13 @@ async function registerUser(event) {
   registerBtn.innerHTML = "Creating account…";
 
   try {
-    const response = await fetch(REGISTER_API, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        email: email,
-        password: password
-      })
-    });
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
 
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      throw new Error(
-        data.detail || "Unable to create your account."
-      );
-    }
+    await sendEmailVerification(userCredential.user);
 
     registerForm.reset();
 
@@ -259,7 +242,7 @@ async function registerUser(event) {
     showLoginMode();
 
     showAuthError(
-      "Account created successfully. Sign in with your new credentials."
+      "Account created! Please verify your email before logging in."
     );
 
     authError.style.color = "#166534";
@@ -267,22 +250,17 @@ async function registerUser(event) {
     authError.style.borderColor = "#bbf7d0";
 
   } catch (error) {
+    console.error(error);
     authError.style.color = "";
     authError.style.background = "";
     authError.style.borderColor = "";
 
-    if (error.name === "TypeError") {
-      showAuthError(
-        "Unable to connect to the API. Please try again in a moment."
-      );
-    } else {
-      showAuthError(error.message || "Unable to create account.");
-    }
+    showAuthError(error.message || "Unable to create account.");
   } finally {
     registerBtn.disabled = false;
     registerBtn.innerHTML = 'Create account <span>→</span>';
   }
-}
+
 
 
 /* =========================

@@ -339,6 +339,37 @@
   </div>
 
   <script src="script.js"></script>
+  
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+    import { 
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      sendEmailVerification
+    } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "[REDACTED]",
+    authDomain: "customer-churn-predictio-9ce9e.firebaseapp.com",
+    projectId: "customer-churn-predictio-9ce9e",
+    storageBucket: "customer-churn-predictio-9ce9e.firebasestorage.app",
+    messagingSenderId: "1057565817576",
+    appId: "1:1057565817576:web:4ef84fc1d5110c83fb675d",
+    measurementId: "G-0CEQG2YRFC"
+  };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    window.firebaseAuth = auth;
+    window.firebaseFunctions = {
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      sendEmailVerification
+    };
+  </script>
+
 </body>
 </html>
 
