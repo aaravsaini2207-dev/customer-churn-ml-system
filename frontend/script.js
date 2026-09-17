@@ -38,6 +38,7 @@ const registerPassword = document.getElementById("register-password");
 const logoutBtn = document.getElementById("logout-btn");
 const userEmail = document.getElementById("user-email");
 const userAvatar = document.getElementById("user-avatar");
+const googleLoginBtn = document.getElementById("google-login-btn");
 
 
 /* =========================
@@ -222,6 +223,52 @@ async function loginUser(event) {
 
     loginBtn.innerHTML =
       'Sign in <span>→</span>';
+  }
+}
+
+
+/* =========================
+   LOGIN WITH GOOGLE
+========================= */
+
+async function loginWithGoogle() {
+  clearAuthError();
+
+  const auth = window.firebaseAuth;
+
+  const {
+    GoogleAuthProvider,
+    signInWithPopup
+  } = window.firebaseFunctions;
+
+  googleLoginBtn.disabled = true;
+  googleLoginBtn.innerHTML = "Signing in…";
+
+  try {
+    const provider = new GoogleAuthProvider();
+
+    const result = await signInWithPopup(auth, provider);
+
+    const user = result.user;
+
+    const token = await user.getIdToken();
+
+    saveSession(token, user.email);
+
+    showApp();
+
+  } catch (error) {
+    console.error("Google login error:", error);
+
+    showAuthError(
+      error.message || "Unable to sign in with Google."
+    );
+
+  } finally {
+    googleLoginBtn.disabled = false;
+
+    googleLoginBtn.innerHTML =
+      '<span class="google-logo">G</span> Continue with Google';
   }
 }
 
@@ -1029,6 +1076,11 @@ loginForm.addEventListener(
 registerForm.addEventListener(
   "submit",
   registerUser
+);
+
+googleLoginBtn.addEventListener(
+  "click",
+  loginWithGoogle
 );
 
 form.addEventListener(
