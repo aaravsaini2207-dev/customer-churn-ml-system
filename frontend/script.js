@@ -162,16 +162,16 @@ authSwitchBtn.addEventListener("click", function () {
    LOGIN
 ========================= */
 
-const auth = window.firebaseAuth;
-const {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  sendEmailVerification
-} = window.firebaseFunctions;
-
 async function loginUser(event) {
   event.preventDefault();
   clearAuthError();
+
+  const auth = window.firebaseAuth;
+  const {
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    sendEmailVerification
+  } = window.firebaseFunctions;
 
   const email = loginEmail.value.trim();
   const password = loginPassword.value;
@@ -220,6 +220,12 @@ async function registerUser(event) {
   event.preventDefault();
   clearAuthError();
 
+  const auth = window.firebaseAuth;
+  const {
+    createUserWithEmailAndPassword,
+    sendEmailVerification
+  } = window.firebaseFunctions;
+
   const email = registerEmail.value.trim();
   const password = registerPassword.value;
 
@@ -260,7 +266,7 @@ async function registerUser(event) {
     registerBtn.disabled = false;
     registerBtn.innerHTML = 'Create account <span>→</span>';
   }
-
+}
 
 
 /* =========================
@@ -784,5 +790,4 @@ if (getToken() && getStoredEmail()) {
   showApp();
 } else {
   showAuth();
-}
 }
