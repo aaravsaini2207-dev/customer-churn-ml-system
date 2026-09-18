@@ -344,8 +344,25 @@ def customer_intelligence(
     churn_result = run_churn_prediction(customer)
     spend_result = run_spend_prediction(customer)
 
+    firebase_uid = current_user["uid"]
+
+    user = (
+        db.query(User)
+        .filter(User.firebase_uid == firebase_uid)
+        .first()
+    )
+
+    if not user:
+        user = User(
+            firebase_uid=firebase_uid,
+            email=current_user.get("email")
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
     prediction = Prediction(
-        user_id=current_user.id,
+        user_id=user.id,
         recency=customer.recency,
         frequency=customer.frequency,
         monetary=customer.monetary,
