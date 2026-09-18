@@ -345,18 +345,36 @@ def customer_intelligence(
     spend_result = run_spend_prediction(customer)
 
     firebase_uid = current_user["uid"]
+    email = current_user.get("email")
 
+    # First try to find the user by Firebase UID
     user = (
         db.query(User)
         .filter(User.firebase_uid == firebase_uid)
         .first()
     )
 
-    if not user:
+    # If not found, try the existing email
+    if not user and email:
+        user = (
+            db.query(User)
+            .filter(User.email == email)
+            .first()
+        )
+
+    # If the email already exists, connect it to this Firebase account
+    if user:
+        if user.firebase_uid != firebase_uid:
+            user.firebase_uid = firebase_uid
+
+        db.commit()
+        db.refresh(user)
+    else:
         user = User(
             firebase_uid=firebase_uid,
-            email=current_user.get("email")
+            email=email
         )
+
         db.add(user)
         db.commit()
         db.refresh(user)
