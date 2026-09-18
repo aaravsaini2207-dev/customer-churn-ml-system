@@ -267,6 +267,77 @@ button {
   cursor: wait;
 }
 
+.google-login-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  width: 100%;
+
+  border: 1px solid var(--line);
+
+  border-radius: 12px;
+
+  padding: 13px 15px;
+
+  color: var(--ink);
+
+  background: var(--surface);
+
+  font-weight: 750;
+
+  transition: 160ms ease;
+}
+
+.google-login-btn:hover {
+  border-color: #cbd5e1;
+
+  background: var(--surface-soft);
+}
+
+.google-logo {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  display: block;
+}
+
+.github-login-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  width: 100%;
+
+  border: 1px solid var(--line);
+
+  border-radius: 12px;
+
+  padding: 13px 15px;
+
+  color: var(--ink);
+
+  background: var(--surface);
+
+  font-weight: 750;
+
+  transition: 160ms ease;
+}
+
+.github-login-btn:hover {
+  border-color: #cbd5e1;
+
+  background: var(--surface-soft);
+}
+
+.github-logo {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+}
+
 .auth-switch {
   display: flex;
   justify-content: center;
@@ -1404,6 +1475,38 @@ input {
   background: var(--teal);
 
   color: #04100e;
+}
+
+.google-login-btn {
+  background: #111927;
+
+  border-color: #243244;
+
+  color: #f1f5f9;
+}
+
+.google-login-btn:hover {
+  background: #151e2e;
+
+  border-color: #34455a;
+}
+
+.github-login-btn {
+  background: #111927;
+
+  border-color: #243244;
+
+  color: #f1f5f9;
+}
+
+.github-login-btn:hover {
+  background: #151e2e;
+
+  border-color: #34455a;
+}
+
+.github-logo {
+  color: #f1f5f9;
 }
 
 .auth-switch {
