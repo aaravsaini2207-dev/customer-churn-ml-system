@@ -7,7 +7,7 @@ from ..auth import get_current_user
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
-@router.get("me")
+@router.get("/me")
 def get_me(
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -15,7 +15,7 @@ def get_me(
     firebase_uid = current_user["uid"]
     email = current_user.get("email")
 
-    user = db.query("User").filter(User.firebase_uid == firebase_uid).first()
+    user = db.query(User).filter(User.firebase_uid == firebase_uid).first()
 
     if not user:
         user = User(firebase_uid = firebase_uid, email = email)
