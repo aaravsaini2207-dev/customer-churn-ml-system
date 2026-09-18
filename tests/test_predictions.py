@@ -1,30 +1,28 @@
+from App.auth import get_current_user
+from App.main import app
+
+from fastapi.testclient import TestClient
+
+client = TestClient(app)
+app = client.app
+
+def fake_current_user():
+    return {
+        "uid": "test-firebase-uid",
+        "email": "intel@example.com",
+        "email_verified": True
+    }
+
+
 def test_customer_intelligence(client):
 
-    # Register
-    client.post(
-        "/users/",
-        json={
-            "email": "intel@example.com",
-            "password": "testpassword123"
-        }
-    )
+    app = client.app
+    app.dependency_overrides[get_current_user] = fake_current_user
 
-    # Login
-    login = client.post(
-        "/users/login",
-        data={
-            "username": "intel@example.com",
-            "password": "testpassword123"
-        }
-    )
-
-    token = login.json()["access_token"]
-
-    # Customer intelligence
     response = client.post(
         "/api/v1/customer-intelligence",
         headers={
-            "Authorization": f"Bearer {token}"
+            "Authorization": "Bearer fake-test-token"
         },
         json={
             "recency": 30,
@@ -40,42 +38,27 @@ def test_customer_intelligence(client):
 
     data = response.json()
 
-    # Churn
     assert "churn_probability" in data
     assert "prediction" in data
     assert "risk" in data
-
-    # Future spend
     assert "predicted_90_day_spend" in data
+
+    app.dependency_overrides.clear()
 
 
 def test_prediction_history(client):
 
-    # Register
-    client.post(
-        "/users/",
-        json={
-            "email": "intel@example.com",
-            "password": "testpassword123"
-        }
-    )
+    app = client.app
+    app.dependency_overrides[get_current_user] = fake_current_user
 
-    # Login
-    login = client.post(
-        "/users/login",
-        data={
-            "username": "intel@example.com",
-            "password": "testpassword123"
-        }
-    )
-
-    token = login.json()["access_token"]
-    headers = {"Authorization" :f"Bearer {token}"}
+    headers = {
+        "Authorization": "Bearer fake-test-token"
+    }
 
     # Create prediction
     prediction = client.post(
         "/api/v1/customer-intelligence",
-        headers= headers,
+        headers=headers,
         json={
             "recency": 30,
             "frequency": 10,
@@ -88,13 +71,19 @@ def test_prediction_history(client):
 
     assert prediction.status_code == 200
 
-    #get history
-    response = client.get("/api/v1/predictions", headers = headers)
+    # Get history
+    response = client.get(
+        "/api/v1/predictions",
+        headers=headers
+    )
 
     assert response.status_code == 200
+
     data = response.json()
 
-    assert isinstance(data , list)
-    assert len(data)==1
+    assert isinstance(data, list)
+    assert len(data) == 1
     assert data[0]["recency"] == 30
     assert data[0]["frequency"] == 10
+
+    app.dependency_overrides.clear()
