@@ -814,46 +814,230 @@ const githubLoginBtn =
 
 
 async function loginWithGithub() {
-
   clearAuthError();
 
-  const auth =
-    window.firebaseAuth;
+  const auth = window.firebaseAuth;
 
   const {
     GithubAuthProvider,
-    signInWithPopup
-  } =
-    window.firebaseFunctions;
+    signInWithPopup,
+    signInWithEmailAndPassword,
+    linkWithCredential
+  } = window.firebaseFunctions;
+
+  const modal = document.getElementById("github-link-modal");
+  const passwordInput =
+    document.getElementById("github-link-password");
+  const message =
+    document.getElementById("github-link-message");
+  const errorBox =
+    document.getElementById("github-link-error");
+  const submitBtn =
+    document.getElementById("github-link-submit");
+  const cancelBtn =
+    document.getElementById("github-link-cancel");
+  const closeBtn =
+    document.getElementById("github-link-close");
+
+  let pendingCredential = null;
+  let pendingEmail = null;
+
+  function closeModal() {
+    modal.hidden = true;
+    passwordInput.value = "";
+    errorBox.hidden = true;
+    errorBox.textContent = "";
+    pendingCredential = null;
+    pendingEmail = null;
+  }
+
+  function openModal(email, credential) {
+    pendingEmail = email;
+    pendingCredential = credential;
+
+    message.textContent =
+      `An account already exists with ${email}. ` +
+      `Enter your existing password to connect GitHub.`;
+
+    passwordInput.value = "";
+    errorBox.hidden = true;
+    errorBox.textContent = "";
+
+    modal.hidden = false;
+
+    setTimeout(() => {
+      passwordInput.focus();
+    }, 100);
+  }
+
+  async function connectGithub() {
+    const password = passwordInput.value.trim();
+
+    if (!password) {
+      errorBox.textContent =
+        "Please enter your password.";
+      errorBox.hidden = false;
+      return;
+    }
+
+    submitBtn.disabled = true;
+    cancelBtn.disabled = true;
+
+    submitBtn.textContent =
+      "Connecting…";
+
+    errorBox.hidden = true;
+
+    try {
+      // Sign into the existing Email/Password account
+      const result =
+        await signInWithEmailAndPassword(
+          auth,
+          pendingEmail,
+          password
+        );
+
+      const existingUser = result.user;
+
+      // Link the ORIGINAL GitHub credential
+      await linkWithCredential(
+        existingUser,
+        pendingCredential
+      );
+
+      const token =
+        await existingUser.getIdToken(true);
+
+      saveSession(
+        token,
+        existingUser.email
+      );
+
+      closeModal();
+
+      showApp();
+
+    } catch (linkError) {
+
+      console.error(
+        "GitHub linking error:",
+        linkError
+      );
+
+      if (
+        linkError.code ===
+        "auth/wrong-password" ||
+        linkError.code ===
+        "auth/invalid-credential"
+      ) {
+        errorBox.textContent =
+          "Incorrect password. Please try again.";
+
+      } else if (
+        linkError.code ===
+        "auth/credential-already-in-use"
+      ) {
+        errorBox.textContent =
+          "This GitHub account is already connected to another account.";
+
+      } else if (
+        linkError.code ===
+        "auth/provider-already-linked"
+      ) {
+        errorBox.textContent =
+          "GitHub is already connected to this account.";
+
+      } else {
+        errorBox.textContent =
+          linkError.message ||
+          "Unable to connect GitHub.";
+      }
+
+      errorBox.hidden = false;
+
+    } finally {
+
+      submitBtn.disabled = false;
+      cancelBtn.disabled = false;
+
+      submitBtn.textContent =
+        "Connect GitHub";
+    }
+  }
+
+  cancelBtn.onclick = closeModal;
+  closeBtn.onclick = closeModal;
+
+  submitBtn.onclick = connectGithub;
+
+  passwordInput.onkeydown = function (event) {
+    if (event.key === "Enter") {
+      connectGithub();
+    }
+
+    if (event.key === "Escape") {
+      closeModal();
+    }
+  };
 
   githubLoginBtn.disabled = true;
-
   githubLoginBtn.innerHTML =
-    "<span>Signing in with GitHub…</span>";
+    "Connecting GitHub…";
 
   try {
 
     const provider =
       new GithubAuthProvider();
 
-    const result =
-      await signInWithPopup(
-        auth,
-        provider
+    try {
+
+      // ONLY GitHub popup
+      const result =
+        await signInWithPopup(
+          auth,
+          provider
+        );
+
+      const user = result.user;
+
+      const token =
+        await user.getIdToken(true);
+
+      saveSession(
+        token,
+        user.email || "GitHub User"
       );
 
-    const user =
-      result.user;
+      showApp();
 
-    const token =
-      await user.getIdToken(true);
+    } catch (error) {
 
-    saveSession(
-      token,
-      user.email || "GitHub User"
-    );
+      if (
+        error.code !==
+        "auth/account-exists-with-different-credential"
+      ) {
+        throw error;
+      }
 
-    showApp();
+      // Get the ORIGINAL GitHub credential
+      const credential =
+        GithubAuthProvider.credentialFromError(
+          error
+        );
+
+      const email =
+        error.customData?.email;
+
+      if (!credential || !email) {
+        throw error;
+      }
+
+      // Show our proper modal
+      openModal(
+        email,
+        credential
+      );
+    }
 
   } catch (error) {
 
@@ -863,16 +1047,15 @@ async function loginWithGithub() {
     );
 
     showAuthError(
-      firebaseErrorMessage(error)
+      error.message ||
+      "Unable to sign in with GitHub."
     );
 
   } finally {
 
-    githubLoginBtn.disabled =
-      false;
+    githubLoginBtn.disabled = false;
 
     githubLoginBtn.innerHTML = `
-
       <svg
         class="github-logo"
         viewBox="0 0 24 24"
@@ -882,14 +1065,12 @@ async function loginWithGithub() {
       >
         <path
           fill="currentColor"
-          d="M12 2C6.48 2 2 6.58 2 12.26c0 4.54 2.87 8.39 6.84 9.74.5.1.68-.22.68-.49v-1.72c-2.78.62-3.37-1.38-3.37-1.38-.45-1.2-1.11-1.52-1.11-1.52-.91-.64.07-.63.07-.63 1 .08 1.53 1.06 1.53 1.06.9 1.57 2.35 1.12 2.92.86.09-.67.35-1.12.64-1.38-2.22-.26-4.55-1.14-4.55-5.08 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.18 9.18 0 0 1 12 6.2c.85 0 1.7.12 2.5.36 1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.95-2.34 4.81-4.57 5.07.36.32.68.94.68 1.9v2.57c0 .27.18.6.69.49A10.27 10.27 0 0 0 22 12.26C22 6.58 17.52 2 12 2Z"
+          d="M12 2C6.48 2 2 6.58 2 12.26c0 4.54 2.87 8.39 6.84 9.74.5.1.68-.22.68-.49v-1.72c-2.78.62-3.37-1.38-3.37-1.38-.45-1.2-1.11-1.52-1.11-1.52-.91-.64.07-.63.07-.63 1 .08 1.53 1.06 1.53 1.06.9 1.57 2.35 1.12 2.92.86.09-.67.35-1.12.64-1.38-2.22-.26-4.55-1.14-4.55-5.08 0-1.12.39-2.03 1.03-2.75 0-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.18 9.18 0 0 1 12 6.2c.85 0 1.7.12 2.5.36 1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.95-2.34 4.81-4.57 5.07.36.32.68.94.68 1.9v2.57c0 .27.18.6.68.49A10.27 10.27 0 0 0 22 12.26C22 6.58 17.52 2 12 2Z"
         />
       </svg>
 
       <span>Continue with GitHub</span>
-
     `;
-
   }
 }
 

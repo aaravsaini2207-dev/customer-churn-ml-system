@@ -2100,6 +2100,137 @@ input {
   outline-color: #2dd4bf;
 }
 
+
+/* =====================================================
+   GITHUB ACCOUNT LINKING MODAL
+   ===================================================== */
+
+.github-link-modal[hidden] {
+  display: none;
+}
+
+.github-link-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+}
+
+.github-link-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+.github-link-card {
+  position: relative;
+  z-index: 1;
+  width: min(92%, 420px);
+  padding: 30px;
+  border-radius: 20px;
+  background: white;
+  box-shadow: 0 25px 70px rgba(15, 23, 42, 0.25);
+  animation: githubModalIn 0.2s ease-out;
+}
+
+@keyframes githubModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.github-link-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 26px;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.github-link-close:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.github-link-icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 16px;
+  border-radius: 14px;
+  background: #f1f5f9;
+  color: #181717;
+}
+
+.github-link-card h2 {
+  margin: 0 0 8px;
+  font-size: 22px;
+}
+
+.github-link-card > p {
+  margin: 0 0 20px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.github-password-wrap {
+  margin-bottom: 8px;
+}
+
+.github-link-error {
+  margin: 8px 0 0 !important;
+  color: #dc2626 !important;
+  font-size: 14px;
+}
+
+.github-link-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.github-link-cancel,
+.github-link-submit {
+  padding: 11px 18px;
+  border-radius: 9px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.github-link-cancel {
+  border: 1px solid #e2e8f0;
+  background: white;
+  color: #475569;
+}
+
+.github-link-submit {
+  border: 0;
+  background: var(--teal);
+  color: white;
+}
+
+.github-link-submit:disabled,
+.github-link-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .password-input-wrap input {
 
   padding-right: 48px !important;
