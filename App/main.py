@@ -42,7 +42,11 @@ api_router = APIRouter(prefix="/api/v1")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://retail-churn-frontend.onrender.com",],
+    allow_origins=[
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+    "https://retail-churn-frontend.onrender.com",
+],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
