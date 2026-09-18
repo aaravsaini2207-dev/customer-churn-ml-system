@@ -2,7 +2,7 @@
 
 An end-to-end **Machine Learning application** that combines customer churn prediction, 90-day spend forecasting, SHAP explainability, and retention insights into a single customer intelligence system.
 
-The project goes beyond building ML models by integrating them with a **FastAPI backend, JWT authentication, database, interactive web dashboard, Docker, and cloud deployment**.
+The project goes beyond building ML models by integrating them with a **FastAPI backend, Firebase Authentication, PostgreSQL, interactive web dashboard, Docker, and cloud deployment**.
 
 ---
 
@@ -74,7 +74,7 @@ This makes the ML output easier to interpret at the individual customer level.
 
 ### 🎯 Customer Intelligence
 
-The system combines the outputs from multiple ML components into one customer-level view:
+The system combines multiple ML outputs into one customer-level view:
 
 **Churn Probability**
 ↓
@@ -92,44 +92,46 @@ The goal is to move from:
 
 ---
 
-### 🔐 Authentication & Authorization
+## 🔐 Firebase Authentication
 
-The application includes a protected backend rather than exposing prediction endpoints publicly.
+The application uses **Firebase Authentication** for user identity and account security.
 
 Implemented:
 
-* User registration
-* User login
-* Password hashing
-* JWT access tokens
-* Bearer-token authentication
-* Protected ML prediction endpoints
-* Token validation and user lookup
+* Email/password registration
+* Email verification
+* Firebase login
+* Google authentication
+* GitHub authentication
+* Firebase ID tokens
+* Protected FastAPI prediction endpoints
+* Firebase UID → application-user mapping
 
-The authentication layer was implemented using FastAPI security utilities and JWT-based access tokens.
+Firebase handles authentication and identity, while the application database stores application-specific user and prediction data.
 
 ### Authentication Preview
 
-![Customer Churn Intelligence Authentication ](images/Authentication.png)
+![Customer Churn Intelligence Authentication](images/Authentication.png)
 
 ---
 
-### ⚡ FastAPI Backend
+## ⚡ FastAPI Backend
 
 The ML models are served through a REST API built with **FastAPI**.
 
 The backend handles:
 
+* Firebase ID-token verification
 * Request validation
-* Authentication
 * Feature preparation
 * Churn inference
 * Spend inference
 * SHAP explanation generation
 * Structured JSON responses
 * Database interaction
+* Customer prediction history
 
-Core prediction endpoints include:
+### Core Prediction Endpoints
 
 ```text
 POST /api/v1/predict
@@ -137,53 +139,65 @@ POST /api/v1/predict_spend
 POST /api/v1/customer-intelligence
 ```
 
-Authentication endpoints:
+### User Endpoint
 
 ```text
-POST /users/
-POST /users/login
+GET /users/me
 ```
+
+The `/users/me` endpoint synchronizes the authenticated Firebase user with the application's database.
 
 ---
 
 ## 🏗️ System Architecture
 
 ```text
-                    ┌──────────────────────┐
-                    │    Web Dashboard     │
-                    │     HTML/CSS/JS      │
-                    └──────────┬───────────┘
-                               │
-                         HTTPS / JSON
-                               │
-                               ▼
-                    ┌──────────────────────┐
-                    │       FastAPI        │
-                    │     REST Backend     │
-                    └──────────┬───────────┘
-                               │
-                 ┌─────────────┼─────────────┐
-                 │             │             │
-                 ▼             ▼             ▼
-          ┌────────────┐ ┌────────────┐ ┌────────────┐
-          │  XGBoost   │ │  Random    │ │    SHAP    │
-          │  Churn     │ │  Forest    │ │ Explainable│
-          │ Classifier │ │ Regressor  │ │     AI     │
-          └─────┬──────┘ └─────┬──────┘ └─────┬──────┘
-                │              │              │
-                ▼              ▼              ▼
-          Churn Risk      90-Day Spend    Key Drivers
-                │              │              │
-                └──────────────┼──────────────┘
-                               ▼
-                    ┌──────────────────────┐
-                    │ Customer Intelligence│
-                    │                      │
-                    │ • Risk               │
-                    │ • Future Value       │
-                    │ • SHAP Drivers       │
-                    │ • Recommendation     │
-                    └──────────────────────┘
+                    ┌──────────────────────────┐
+                    │      Web Dashboard        │
+                    │       HTML/CSS/JS         │
+                    └────────────┬─────────────┘
+                                 │
+                                 │ Firebase Auth
+                                 ▼
+                    ┌──────────────────────────┐
+                    │   Firebase Authentication │
+                    │                            │
+                    │ • Email / Password         │
+                    │ • Google                   │
+                    │ • GitHub                   │
+                    │ • Email Verification      │
+                    └────────────┬─────────────┘
+                                 │
+                          Firebase ID Token
+                                 │
+                                 ▼
+                    ┌──────────────────────────┐
+                    │         FastAPI           │
+                    │       REST Backend        │
+                    └────────────┬─────────────┘
+                                 │
+                     Verify Firebase Token
+                                 │
+                ┌────────────────┼────────────────┐
+                │                │                │
+                ▼                ▼                ▼
+        ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+        │   XGBoost    │ │Random Forest │ │     SHAP     │
+        │    Churn     │ │    Spend     │ │Explainability│
+        │  Classifier  │ │  Regressor   │ │              │
+        └──────┬───────┘ └──────┬───────┘ └──────┬───────┘
+               │                │                │
+               ▼                ▼                ▼
+          Churn Risk       90-Day Spend      Key Drivers
+               │                │                │
+               └────────────────┼────────────────┘
+                                ▼
+                    ┌──────────────────────────┐
+                    │   PostgreSQL Database    │
+                    │                          │
+                    │ • Users                  │
+                    │ • Prediction History     │
+                    └──────────────────────────┘
 ```
 
 ---
@@ -242,32 +256,35 @@ These features are used by the prediction pipeline to generate customer-level in
 
 ## 🧩 Model Components
 
-| Component        | Technology                | Purpose                                |
-| ---------------- | ------------------------- | -------------------------------------- |
-| Churn Prediction | XGBoost                   | Predict churn probability              |
-| Spend Prediction | Random Forest             | Forecast 90-day customer spend         |
-| Explainability   | SHAP                      | Explain individual churn predictions   |
-| API              | FastAPI                   | Serve ML models through REST APIs      |
-| Authentication   | JWT                       | Secure protected endpoints             |
-| Database         | SQLAlchemy / SQL database | Store application data                 |
-| Frontend         | HTML / CSS / JavaScript   | Interactive dashboard                  |
-| Containerization | Docker                    | Reproducible application environment   |
-| Deployment       | Cloud deployment          | Make the application accessible online |
+| Component        | Technology              | Purpose                                       |
+| ---------------- | ----------------------- | --------------------------------------------- |
+| Churn Prediction | XGBoost                 | Predict churn probability                     |
+| Spend Prediction | Random Forest           | Forecast 90-day customer spend                |
+| Explainability   | SHAP                    | Explain individual churn predictions          |
+| API              | FastAPI                 | Serve ML models through REST APIs             |
+| Authentication   | Firebase Authentication | Manage user identity and authentication       |
+| Database         | PostgreSQL / SQLAlchemy | Store application data and prediction history |
+| Frontend         | HTML / CSS / JavaScript | Interactive dashboard                         |
+| Containerization | Docker / Docker Compose | Reproducible application environment          |
+| Deployment       | Render                  | Cloud deployment                              |
 
 ---
 
 ## 🔄 Request Flow
 
-1. User logs into the application.
-2. Backend authenticates the user using JWT.
-3. User enters customer information through the dashboard.
-4. Frontend sends the customer data to the FastAPI backend.
-5. FastAPI validates the request.
-6. XGBoost generates the churn probability and risk.
-7. Random Forest predicts expected 90-day spend.
-8. SHAP generates customer-level feature explanations.
-9. The backend combines the results.
-10. The dashboard presents the predictions and business insights.
+1. User authenticates through Firebase.
+2. Firebase issues an ID token.
+3. The frontend sends the token with requests to FastAPI.
+4. FastAPI verifies the Firebase ID token using the Firebase Admin SDK.
+5. The backend identifies or creates the corresponding application user using the Firebase UID.
+6. The user enters customer information through the dashboard.
+7. FastAPI validates the request.
+8. XGBoost generates the churn probability and risk.
+9. Random Forest predicts expected 90-day spend.
+10. SHAP generates customer-level feature explanations.
+11. The backend combines the results.
+12. Prediction information is stored in the database.
+13. The dashboard presents the predictions and customer insights.
 
 ---
 
@@ -278,7 +295,7 @@ The dashboard provides a single customer-level view containing:
 * Customer information
 * Churn probability
 * Risk level
-* Prediction
+* Churn prediction
 * 90-day predicted spend
 * SHAP feature contributions
 * Retention recommendation
@@ -306,22 +323,31 @@ The dashboard was redesigned as part of the final project iteration with:
 
 ## 🔌 API
 
-The application exposes the ML functionality through a FastAPI REST backend.
+The application exposes its ML functionality through a FastAPI REST backend.
+
+### Authentication
+
+Firebase handles authentication on the frontend.
+
+The frontend obtains a Firebase ID token and sends it to FastAPI using:
+
+```http
+Authorization: Bearer <firebase-id-token>
+```
+
+FastAPI verifies the token through the **Firebase Admin SDK** before allowing access to protected ML endpoints.
 
 ### Main Endpoints
 
 ```text
-Authentication
-POST /users/
-POST /users/login
+User
+GET /users/me
 
 ML Predictions
 POST /api/v1/predict
 POST /api/v1/predict_spend
 POST /api/v1/customer-intelligence
 ```
-
-Protected prediction endpoints require a valid JWT Bearer token.
 
 ### Example Spend Response
 
@@ -354,14 +380,23 @@ Protected prediction endpoints require a valid JWT Bearer token.
 * Pydantic
 * REST APIs
 * SQLAlchemy
-* JWT Authentication
-* OAuth2 Bearer Authentication
+* Firebase Admin SDK
+* PostgreSQL
+
+### Authentication
+
+* Firebase Authentication
+* Firebase ID Tokens
+* Email Verification
+* Google OAuth
+* GitHub OAuth
 
 ### Frontend
 
 * HTML
 * CSS
 * JavaScript
+* Firebase Web SDK
 * Responsive dashboard
 * REST API integration
 
@@ -371,7 +406,7 @@ Protected prediction endpoints require a valid JWT Bearer token.
 * Docker Compose
 * Git
 * GitHub
-* Cloud deployment
+* Render
 
 ---
 
@@ -383,11 +418,13 @@ customer-churn-ml-system/
 ├── App/
 │   ├── main.py
 │   ├── auth.py
+│   ├── firebase.py
 │   ├── database.py
 │   ├── models.py
 │   ├── config.py
 │   └── routers/
-│       └── users.py
+│       ├── users.py
+│       └── predictions.py
 │
 ├── Model/
 │   ├── churn_model/
@@ -398,14 +435,16 @@ customer-churn-ml-system/
 │   ├── style.css
 │   └── script.js
 │
+├── alembic/
+│   └── versions/
+│
 ├── notebooks/
 │   └── ...
 │
 ├── images/
-│   └── dashboard.png
+│   └── ...
 │
 ├── Dockerfile
-├── Dockerfile.streamlit
 ├── docker-compose.yml
 ├── requirements.txt
 └── README.md
@@ -423,7 +462,7 @@ customer-churn-ml-system/
 
 The ROC-AUC score measures the model's ability to distinguish between customers who churn and customers who remain.
 
-The project focuses on more than predictive performance by adding **explainability, customer value estimation, API access, and deployment** around the model.
+The project focuses on more than predictive performance by adding **explainability, customer value estimation, API access, authentication, database integration, and deployment** around the model.
 
 ### Spend Regression
 
@@ -435,17 +474,23 @@ The regression output is exposed through the API and displayed directly in the d
 
 ## 🐳 Docker & Deployment
 
-The application is structured into separate application layers:
+Docker is used to provide reproducible environments for the application.
+
+The deployed system follows this architecture:
 
 ```text
 Web Dashboard
       │
-      │ HTTPS / REST
+      │ Firebase Authentication
+      ▼
+Firebase
+      │
+      │ Firebase ID Token
       ▼
 FastAPI Backend
       │
-      ├── Authentication
-      ├── Validation
+      ├── Token Verification
+      ├── Request Validation
       ├── ML Inference
       └── Database
              │
@@ -456,7 +501,7 @@ FastAPI Backend
         └── SHAP
 ```
 
-Docker is used to provide reproducible environments for the application components.
+The application is deployed as a cloud-based ML system with the frontend, backend, authentication, database, and model-serving layers working together.
 
 ---
 
@@ -475,17 +520,18 @@ Through the development process, I worked with:
 * REST API development
 * FastAPI
 * Request validation with Pydantic
-* Authentication and authorization
-* JWT access tokens
-* Password hashing
+* Firebase Authentication
+* Email verification
+* OAuth authentication
+* Firebase Admin SDK
 * Database integration
 * Frontend-backend communication
 * Docker and containerization
 * API testing
 * Cloud deployment
-* Debugging CORS and deployment issues
+* Debugging authentication, CORS, database, and deployment issues
 
-One of the biggest lessons was that:
+One of the biggest lessons was:
 
 > **A trained ML model is only one part of an ML application.**
 
@@ -545,7 +591,7 @@ Machine Learning • Data Science • Backend Development • Explainable AI
 
 It combines:
 
-**XGBoost + Random Forest + SHAP + FastAPI + JWT Authentication + Database + Web Dashboard + Docker**
+**XGBoost + Random Forest + SHAP + FastAPI + Firebase Authentication + PostgreSQL + Web Dashboard + Docker**
 
 to create an end-to-end customer intelligence workflow.
 
