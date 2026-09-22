@@ -235,7 +235,7 @@ async def startup_event():
     
 @api_router.get("/")
 def home():
-    return {'message': 'Customer Churn Intelligence API is running'}
+    return {'message': "Retail Customer Churn Prediction API is running!"}
 
 @api_router.get("/health" , response_model = HealthResponse , description="Check API Health" , tags=["Health"])
 def health():
