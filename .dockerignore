@@ -1,76 +1,29 @@
-# Git
-.git
-.gitignore
-.gitattributes
+# Environment variables and secrets
+.env
+.env.*
+App/firebase-service-account.json
 
 # Python
-__pycache__
-*.pyc
+__pycache__/
+*.py[cod]
 *.pyo
-*.pyd
-.Python
-*.egg-info/
-dist/
-build/
-*.egg
+.venv/
+venv/
+env/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Git / tests
+.git/
 .pytest_cache/
 .coverage
 htmlcov/
 
-# Virtual environments
-venv/
-env/
-ENV/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.DS_Store
-
-# Docker
-Dockerfile
-Dockerfile.streamlit
-docker-compose.yml
-.dockerignore
-
-# Notebooks
-*.ipynb
-.ipynb_checkpoints/
-
-# Logs
+# Logs / temporary files
 *.log
-logs/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Temporary files
 *.tmp
 *.bak
-*.swp
-*~
-
-# Environment files (local only, not the one we use)
-.env.local
-.env.*.local
-
-# Windows shortcuts
-*.lnk
-windows shortcuts.md
-
-# Node modules (if any)
-node_modules/
-
-# Images directory (optional, only if very large)
-images/
-
-# Alembic migrations (optional, depending on your setup)
-# alembic/versions/
-
-# README and documentation
-README.md
-*.md
