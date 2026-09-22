@@ -26,8 +26,8 @@ from App.logging_config import setup_logging
 
 # Create FastAPI application
 app = FastAPI(
-    title= "Retail Customer Churn Prediction API",
-    description = "API for predicting customer churn using XGBoost",
+    title="Customer Churn Intelligence API",
+    description="API for customer churn prediction, 90-day spend forecasting, and SHAP-based explainability",
     version = "1.0.0"
 )  
 
@@ -235,7 +235,7 @@ async def startup_event():
     
 @api_router.get("/")
 def home():
-    return {'message': "Retail Customer Churn Prediction API is running!"}
+    return {'message': 'Customer Churn Intelligence API is running'}
 
 @api_router.get("/health" , response_model = HealthResponse , description="Check API Health" , tags=["Health"])
 def health():
