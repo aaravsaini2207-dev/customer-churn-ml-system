@@ -26,9 +26,6 @@ services:
       - "8000:8000"
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-      SECRET_KEY: ${SECRET_KEY}
-      ALGORITHM: ${ALGORITHM:-HS256}
-      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
     volumes:
       - ./App:/app/app
       - ./Model:/app/Model
