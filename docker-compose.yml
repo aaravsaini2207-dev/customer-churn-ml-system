@@ -39,41 +39,24 @@ services:
       timeout: 10s
       retries: 5
       start_period: 40s
-    develop:
-      watch:
-        - path: ./App
-          action: sync
-          target: /app/app
-        - path: ./Model
-          action: sync
-          target: /app/Model
 
   frontend:
     build:
-      context: .
-      dockerfile: Dockerfile.streamlit
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: churn-frontend
     ports:
-      - "8501:8501"
-    environment:
-      STREAMLIT_SERVER_HEADLESS: "true"
-    volumes:
-      - ./streamlit_app.py:/app/streamlit_app.py
+      - "8501:80"
     depends_on:
       api:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8501/"]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost/"]
       interval: 15s
       timeout: 5s
       retries: 3
-      start_period: 60s
-    develop:
-      watch:
-        - path: ./streamlit_app.py
-          action: sync
-          target: /app/streamlit_app.py
+      start_period: 10s
 
 volumes:
   postgres_data:
