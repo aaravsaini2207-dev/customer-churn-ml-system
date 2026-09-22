@@ -225,9 +225,9 @@ Services:
 
 | Service | Local address |
 |---|---|
-| Frontend | http://localhost:8501 |
-| FastAPI | http://localhost:8000 |
-| Swagger docs | http://localhost:8000/docs |
+| Frontend | [http://localhost:8501](https://retail-churn-frontend.onrender.com) |
+| FastAPI | [http://localhost:8000](https://customer-churn-api-new.onrender.com) |
+| Swagger docs | [http://localhost:8000/docs](https://customer-churn-api-new.onrender.com/docs) |
 | PostgreSQL | localhost:2207 |
 
 The browser frontend automatically uses the local API when opened on localhost.
@@ -242,16 +242,6 @@ python -m pytest -v
 
 GitHub Actions runs the test suite on pushes and pull requests to `main`.
 
-## Model artifacts
-
-The trained model files are tracked with **Git LFS** because the spend model is substantially larger than a normal source file.
-
-After cloning, make sure Git LFS is installed and pull the tracked artifacts:
-
-```bash
-git lfs install
-git lfs pull
-```
 
 ## Engineering highlights
 
@@ -286,6 +276,6 @@ git lfs pull
 ## Author
 
 **Aarav Saini**  
-B.Tech — Information Technology / CSE
+B.Tech —  CSE
 
 Machine Learning • Data Science • Backend Engineering • Explainable AI
