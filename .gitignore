@@ -1,36 +1,40 @@
-# Environment variables
+# Environment variables and secrets
 .env
-.env.*
+.env.local
+.env.*.local
+App/firebase-service-account.json
 
 # Python
 __pycache__/
 *.py[cod]
 *.pyo
-
-# Virtual environments
-venv/
+*.pyd
+*.egg-info/
 .venv/
+venv/
 env/
+ENV/
 
-# IDE
+# IDE / OS
 .vscode/
 .idea/
-
-# OS
 .DS_Store
 Thumbs.db
-
-# ML artifacts / large generated files
-*.pkl
+*.swp
+*.swo
+*~
 
 # Testing / coverage
 .pytest_cache/
 .coverage
 htmlcov/
+test.db
 
-# Alembic
-# Keep migrations tracked!
-# alembic/versions/ should NOT be ignored
+# Logs / temporary files
+*.log
+logs/
+*.tmp
+*.bak
 
-# Firebase secrets
-App/firebase-service-account.json
+# Node
+node_modules/
