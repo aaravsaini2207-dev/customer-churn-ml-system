@@ -25,19 +25,11 @@ The project turns customer transaction features into an actionable workflow:
 | Deployment | Docker / Docker Compose / Render |
 | Testing | pytest + GitHub Actions |
 
-## Product flow
+## System flow
 
-1. A user signs in through Firebase Authentication.
-2. Firebase issues an ID token.
-3. The frontend sends the token to the FastAPI backend.
-4. FastAPI verifies the token with the Firebase Admin SDK.
-5. Customer behaviour is validated and passed to the ML models.
-6. XGBoost produces churn probability and a churn decision.
-7. SHAP generates customer-level feature contributions.
-8. Random Forest estimates 90-day spend.
-9. The backend combines the outputs into a customer intelligence response.
-10. The prediction is stored in PostgreSQL.
-11. The dashboard presents the result and retention guidance.
+Firebase Auth → FastAPI → ML inference → SHAP explanation → PostgreSQL → Dashboard
+
+The main customer-intelligence endpoint combines churn prediction, spend forecasting, local explanations, and prediction persistence in a single request.
 
 ## Screenshots
 
@@ -245,15 +237,13 @@ GitHub Actions runs the test suite on pushes and pull requests to `main`.
 
 ## Engineering highlights
 
-- Designed an authenticated ML inference API instead of exposing model code directly to the frontend.
-- Added Firebase ID-token verification at the backend boundary.
-- Persisted user-linked prediction history in PostgreSQL.
-- Added Alembic database migrations.
-- Combined two predictive models and local SHAP explanations into one customer intelligence endpoint.
-- Added Dockerized API, database, and static frontend services.
-- Added automated backend tests through GitHub Actions.
-- Added input validation and structured API responses with Pydantic.
-- Added inference logging and model-version identifiers.
+- Authenticated ML inference API rather than exposing model code to the frontend.
+- Firebase ID-token verification at the backend boundary.
+- User-linked prediction persistence with PostgreSQL.
+- Alembic migrations for database schema changes.
+- Combined churn, spend, and SHAP inference workflow.
+- Dockerized API, database, and frontend services.
+- Input validation and structured responses with Pydantic.
 
 ## Limitations
 
@@ -265,15 +255,11 @@ GitHub Actions runs the test suite on pushes and pull requests to `main`.
 
 ## Future work
 
-- Production model monitoring and drift detection
-- Automated retraining pipeline
+- Model monitoring and drift detection
+- Automated retraining
 - Batch prediction
 - Customer segmentation
-- Cost-sensitive retention optimization
-- Better regression evaluation and calibration
 - Experiment-driven retention recommendations
-
-## Author
 
 **Aarav Saini**  
 B.Tech —  CSE
