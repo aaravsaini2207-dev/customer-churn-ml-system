@@ -1,5 +1,8 @@
 const API_BASE =
-  "https://customer-churn-api-new.onrender.com";
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1"
+    ? "http://localhost:8000"
+    : "https://customer-churn-api-new.onrender.com";
 
 
 const LOGIN_API =
