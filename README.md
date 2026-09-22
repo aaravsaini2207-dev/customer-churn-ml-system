@@ -1,95 +1,30 @@
 # Customer Churn Intelligence
 
-An end-to-end customer intelligence system that combines **churn prediction, 90-day spend forecasting, SHAP explainability, authentication, persistence, and a web dashboard**.
+End-to-end ML system for **customer churn prediction, 90-day spend forecasting, SHAP explainability, authentication, and persistent predictions**.
 
-The project turns customer transaction features into an actionable workflow:
-
-**Predict → Explain → Estimate → Prioritize**
+**XGBoost + SHAP + FastAPI + PostgreSQL + Firebase + Docker**
 
 ![Dashboard](images/dashboard-new.png)
 
-## What it does
+## At a glance
 
 | Capability | Implementation |
 |---|---|
 | Churn prediction | XGBoost classifier |
-| Churn explainability | SHAP TreeExplainer |
-| 90-day spend forecast | Random Forest regressor |
-| Risk classification | Probability-based Low / Medium / High tiers |
-| Retention guidance | Rule-based recommendations |
-| Authentication | Firebase Authentication + verified Firebase ID tokens |
+| 90-day spend | Random Forest regressor |
+| Explainability | SHAP TreeExplainer |
+| Risk tiers | Low / Medium / High |
+| Authentication | Firebase Auth + ID-token verification |
 | API | FastAPI + Pydantic |
-| Persistence | PostgreSQL + SQLAlchemy |
+| Database | PostgreSQL + SQLAlchemy |
 | Migrations | Alembic |
-| Frontend | HTML, CSS, JavaScript |
-| Deployment | Docker / Docker Compose / Render |
+| Frontend | HTML / CSS / JavaScript |
+| Deployment | Docker / Render |
 | Testing | pytest + GitHub Actions |
 
-## System flow
+## ML results
 
-Firebase Auth → FastAPI → ML inference → SHAP explanation → PostgreSQL → Dashboard
-
-The main customer-intelligence endpoint combines churn prediction, spend forecasting, local explanations, and prediction persistence in a single request.
-
-## Screenshots
-
-### Authentication
-
-![Authentication](images/Authentication.png)
-
-### Customer intelligence dashboard
-
-![Dashboard](images/dashboard-new.png)
-
-## Architecture
-
-```text
-                         ┌──────────────────────┐
-                         │   Web Dashboard      │
-                         │   HTML/CSS/JS        │
-                         └──────────┬───────────┘
-                                    │
-                             Firebase Auth
-                                    │
-                              ID Token
-                                    ▼
-                         ┌──────────────────────┐
-                         │       FastAPI        │
-                         │    REST Backend      │
-                         └──────────┬───────────┘
-                                    │
-              ┌─────────────────────┼─────────────────────┐
-              ▼                     ▼                     ▼
-        ┌────────────┐       ┌────────────┐       ┌────────────┐
-        │  XGBoost   │       │  Random    │       │    SHAP    │
-        │   Churn    │       │   Forest   │       │ Explain-   │
-        │ Prediction │       │ 90-Day     │       │ ability    │
-        │            │       │ Spend      │       │            │
-        └─────┬──────┘       └─────┬──────┘       └─────┬──────┘
-              └─────────────────────┼─────────────────────┘
-                                    ▼
-                         ┌──────────────────────┐
-                         │     PostgreSQL       │
-                         │ Users + Predictions  │
-                         └──────────────────────┘
-```
-
-## Machine learning
-
-### Churn model
-
-The churn pipeline uses six customer-level behavioural features:
-
-- Recency
-- Frequency
-- Monetary value
-- Average order value
-- Unique products
-- Customer lifetime days
-
-The current XGBoost classifier uses a tuned decision threshold rather than assuming the default 0.50 cutoff.
-
-Reported evaluation:
+Six customer-behaviour features are used: **Recency, Frequency, Monetary Value, Average Order Value, Unique Products, Customer Lifetime Days**.
 
 | Metric | Result |
 |---|---:|
@@ -98,41 +33,41 @@ Reported evaluation:
 | Test accuracy | **65.58%** |
 | Test precision | **59.80%** |
 
-These are offline evaluation results; they should not be interpreted as production performance.
+These are offline evaluation results, not production performance claims.
 
-### 90-day spend model
+The spend model predicts expected customer spend over the next 90 days. Regression metrics are intentionally omitted until the training notebook is the verified source of truth.
 
-A Random Forest regressor estimates expected customer spend over the next 90 days.
+## Architecture
 
-The API exposes the forecast together with the model name, prediction horizon, currency, and number of features used.
+```text
+Web Dashboard
+      │
+Firebase Authentication
+      │ ID Token
+      ▼
+   FastAPI
+      │
+ ┌────┼───────────────┐
+ ▼    ▼               ▼
+XGBoost  Random Forest  SHAP
+Churn    90-Day Spend   Explanation
+ └────┼───────────────┘
+      ▼
+ PostgreSQL
+Users + Predictions
+```
 
-> Regression evaluation metrics are intentionally not listed here until the training/evaluation notebook is treated as the single source of truth.
+The main customer-intelligence endpoint combines **churn prediction + spend forecasting + SHAP explanations + database persistence**.
 
-### Explainability
+## Screenshots
 
-SHAP is used to generate local feature contributions for individual churn predictions. The dashboard surfaces the strongest contributing features so the prediction is not treated as a black box.
+![Authentication](images/Authentication.png)
 
-## Authentication and security
+![High Risk](images/High_risk.png)
 
-The application uses Firebase Authentication for identity and Firebase Admin SDK for backend token verification.
-
-Implemented flow:
-
-- Email/password registration
-- Email verification
-- Google sign-in
-- Firebase ID tokens
-- Protected FastAPI prediction endpoints
-- Firebase UID to application-user mapping
-- PostgreSQL-backed user and prediction records
-
-The Firebase service-account credential is supplied through an environment variable and is not committed to the repository.
+![Low Risk](images/Low_risk.png)
 
 ## API
-
-FastAPI exposes the core ML workflow under `/api/v1`.
-
-### Main endpoints
 
 ```text
 GET  /api/v1/health
@@ -144,124 +79,55 @@ POST /users/
 POST /users/login
 ```
 
-Interactive API documentation is available from FastAPI at:
+Swagger: `/docs`
 
-```text
-http://localhost:8000/docs
-```
+## Security
 
-The main customer intelligence endpoint combines churn prediction, spend forecasting, SHAP explanations, and database persistence in one request.
+- Email/password registration and verification
+- Google sign-in
+- Firebase ID-token verification
+- Protected prediction endpoints
+- Firebase UID → application-user mapping
+- PostgreSQL-backed users and predictions
+- Firebase credentials supplied through environment variables
 
-## Repository structure
-
-```text
-customer-churn-ml-system/
-├── App/
-│   ├── main.py
-│   ├── auth.py
-│   ├── firebase.py
-│   ├── config.py
-│   ├── database.py
-│   ├── models.py
-│   ├── exceptions.py
-│   ├── logging_config.py
-│   └── routers/
-├── Model/
-│   ├── churn_xgboost_model.pkl
-│   ├── churn_threshold.pkl
-│   ├── future_spend_model.pkl
-│   └── future_spend_features.pkl
-├── frontend/
-│   ├── index.html
-│   ├── script.js
-│   ├── style.css
-│   └── Dockerfile
-├── alembic/
-│   └── versions/
-├── images/
-├── tests/
-├── notebooks/
-├── Dockerfile
-├── docker-compose.yml
-├── requirements.txt
-├── .env.example
-└── README.md
-```
-
-## Run with Docker
-
-### 1. Clone the repository
+## Run locally
 
 ```bash
 git clone https://github.com/aaravsaini2207-dev/customer-churn-ml-system.git
 cd customer-churn-ml-system
-```
-
-### 2. Configure environment variables
-
-Copy the example file:
-
-```bash
 cp .env.example .env
-```
-
-Then provide your PostgreSQL credentials and Firebase service-account JSON.
-
-### 3. Start the stack
-
-```bash
 docker compose up --build
 ```
 
-Services:
+**Local:** Frontend `localhost:8501` · API `localhost:8000` · Swagger `localhost:8000/docs` · PostgreSQL `localhost:2207`
 
-| Service | Local address |
-|---|---|
-| Frontend | [http://localhost:8501](https://retail-churn-frontend.onrender.com) |
-| FastAPI | [http://localhost:8000](https://customer-churn-api-new.onrender.com) |
-| Swagger docs | [http://localhost:8000/docs](https://customer-churn-api-new.onrender.com/docs) |
-| PostgreSQL | localhost:2207 |
-
-The browser frontend automatically uses the local API when opened on localhost.
-
-## Run tests
-
-The repository uses pytest for backend tests:
+## Tests
 
 ```bash
 python -m pytest -v
 ```
 
-GitHub Actions runs the test suite on pushes and pull requests to `main`.
-
+GitHub Actions runs the backend test suite on pushes and pull requests to `main`.
 
 ## Engineering highlights
 
-- Authenticated ML inference API rather than exposing model code to the frontend.
-- Firebase ID-token verification at the backend boundary.
-- User-linked prediction persistence with PostgreSQL.
-- Alembic migrations for database schema changes.
-- Combined churn, spend, and SHAP inference workflow.
-- Dockerized API, database, and frontend services.
-- Input validation and structured responses with Pydantic.
+- Authenticated ML inference API
+- Firebase token verification at the backend boundary
+- PostgreSQL prediction persistence
+- Alembic schema migrations
+- Combined ML + SHAP inference workflow
+- Dockerized API, database, and frontend
+- Pydantic validation and structured responses
 
 ## Limitations
 
-- The churn model is evaluated offline and may not generalize to a different customer population.
-- The 90-day spend forecast depends on the behavioural features available at prediction time.
-- Production model monitoring and drift detection are not yet implemented.
-- Retention recommendations are rule-based; they are not learned from observed campaign-treatment outcomes.
-- The system is a decision-support application, not an automated retention decision engine.
+- Offline model evaluation may not generalize to another customer population.
+- Production drift monitoring and automated retraining are not implemented.
+- Retention recommendations are rule-based rather than learned from treatment outcomes.
 
 ## Future work
 
-- Model monitoring and drift detection
-- Automated retraining
-- Batch prediction
-- Customer segmentation
-- Experiment-driven retention recommendations
+Model monitoring · automated retraining · batch prediction · customer segmentation · experiment-driven retention recommendations
 
-**Aarav Saini**  
-B.Tech —  CSE
-
-Machine Learning • Data Science • Backend Engineering • Explainable AI
+**Aarav Saini** · Machine Learning · Data Science · Backend Engineering · Explainable AI
